@@ -152,10 +152,20 @@ public class PlayMakerPhotonProxy : Photon.MonoBehaviour
 			bool ok = false;
 			foreach(PhotonView photonView in allPhotonViews)
 			{
+
 				if 	(photonView.observed == fsm)
 				{
 					ok = true;
 					break;
+				}
+
+				foreach(Component _comp in photonView.ObservedComponents )
+				{
+					if (_comp== fsm)
+					{
+						ok = true;
+						break;
+					}
 				}
 			}
 			
@@ -174,7 +184,24 @@ public class PlayMakerPhotonProxy : Photon.MonoBehaviour
 		foreach(PhotonView photonView in allPhotonViews)
 		{	
 			Debug.Log(" photon view observing : "+photonView.observed+" "+photonView.viewID);
-			
+
+			int i = 0;
+			foreach(Component _comp in photonView.ObservedComponents)
+			{
+				if ( _comp is PlayMakerFSM)
+				{
+					PlayMakerFSM fsm =  (PlayMakerFSM)_comp;
+					PlayMakerPhotonView synchProxy = photonView.gameObject.AddComponent<PlayMakerPhotonView>();
+					Debug.Log("switching observed");
+					synchProxy.observed = fsm;
+
+					photonView.ObservedComponents[i] = synchProxy;
+
+				}
+
+				i++;
+			}
+			/* TOFIX: do we need this anymore? .observed doesn't seems to be used
 			if ( photonView.observed is PlayMakerFSM)
 			{
 				PlayMakerFSM fsm =  (PlayMakerFSM)photonView.observed;
@@ -184,6 +211,7 @@ public class PlayMakerPhotonProxy : Photon.MonoBehaviour
 				
 				photonView.observed = synchProxy;
 			}
+			*/
 		}
 	
 	}// SanitizeGameObject
