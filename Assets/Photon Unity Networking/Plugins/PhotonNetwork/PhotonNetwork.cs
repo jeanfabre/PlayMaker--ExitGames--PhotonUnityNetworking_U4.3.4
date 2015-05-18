@@ -23,7 +23,7 @@ using UnityEditor;
 public static class PhotonNetwork
 {
     /// <summary>Version number of PUN. Also used in GameVersion to separate client version from each other.</summary>
-    public const string versionPUN = "1.50";
+    public const string versionPUN = "1.51";
 
     public static string gameVersion
     {
@@ -1103,7 +1103,7 @@ public static class PhotonNetwork
     /// To ignore the config file and connect anywhere call: PhotonNetwork.ConnectToMaster.
     ///
     /// To connect to the Photon Cloud, a valid AppId must be in the settings file (shown in the Photon Cloud Dashboard).
-    /// https://cloud.exitgames.com/dashboard
+    /// https://www.exitgames.com/dashboard
     ///
     /// Connecting to the Photon Cloud might fail due to:
     /// - Invalid AppId (calls: OnFailedToConnectToPhoton(). check exact AppId value)
@@ -1112,7 +1112,7 @@ public static class PhotonNetwork
     /// - Subscription CCU limit reached (calls: OnConnectionFail() with DisconnectCause.MaxCcuReached. also calls: OnPhotonMaxCccuReached())
     ///
     /// More about the connection limitations:
-    /// http://doc.exitgames.com/photon-cloud
+    /// http://doc.exitgames.com/en/pun
     /// </remarks>
     /// <param name="gameVersion">This client's version number. Users are separated from each other by gameversion (which allows you to make breaking changes).</param>
     public static bool ConnectUsingSettings(string gameVersion)
@@ -1161,7 +1161,7 @@ public static class PhotonNetwork
     /// <summary>Connect to a Photon Master Server by address, port, appID and game(client) version.</summary>
     /// <remarks>
     /// To connect to the Photon Cloud, a valid AppId must be in the settings file (shown in the Photon Cloud Dashboard).
-    /// https://cloud.exitgames.com/dashboard
+    /// https://www.exitgames.com/dashboard
     ///
     /// Connecting to the Photon Cloud might fail due to:
     /// - Invalid AppId (calls: OnFailedToConnectToPhoton(). check exact AppId value)
@@ -1170,7 +1170,7 @@ public static class PhotonNetwork
     /// - Subscription CCU limit reached (calls: OnConnectionFail() with DisconnectCause.MaxCcuReached. also calls: OnPhotonMaxCccuReached())
     ///
     /// More about the connection limitations:
-    /// http://doc.exitgames.com/photon-cloud/
+    /// http://doc.exitgames.com/en/pun
     /// </remarks>
     /// <param name="masterServerAddress">The server's address (either your own or Photon Cloud address).</param>
     /// <param name="port">The server's port to connect to.</param>
@@ -1215,7 +1215,7 @@ public static class PhotonNetwork
     ///
     /// The PUN Setup Wizard stores your appID in a settings file and applies a server address/port.
     /// To connect to the Photon Cloud, a valid AppId must be in the settings file (shown in the Photon Cloud Dashboard).
-    /// https://cloud.exitgames.com/dashboard
+    /// https://www.exitgames.com/dashboard
     ///
     /// Connecting to the Photon Cloud might fail due to:
     /// - Invalid AppId (calls: OnFailedToConnectToPhoton(). check exact AppId value)
@@ -1224,7 +1224,7 @@ public static class PhotonNetwork
     /// - Subscription CCU limit reached (calls: OnConnectionFail() with DisconnectCause.MaxCcuReached. also calls: OnPhotonMaxCccuReached())
     ///
     /// More about the connection limitations:
-    /// http://doc.exitgames.com/photon-cloud
+    /// http://doc.exitgames.com/en/pun
     /// </remarks>
     /// <param name="gameVersion">This client's version number. Users are separated from each other by gameversion (which allows you to make breaking changes).</param>
     /// <returns>If this client is going to connect to cloud server based on ping. Even if true, this does not guarantee a connection but the attempt is being made.</returns>
@@ -1919,11 +1919,13 @@ public static class PhotonNetwork
     /// To receive the events someone sends, register your handling method in PhotonNetwork.OnEventCall.
     ///
     /// Example:
-    /// private void OnEventHandler(byte eventCode, object content, PhotonPlayer sender)
+    /// private void OnEventHandler(byte eventCode, object content, int senderId)
     /// { Debug.Log("OnEventHandler"); }
     ///
     /// PhotonNetwork.OnEventCall += this.OnEventHandler;
     ///
+    /// With the senderId, you can look up the PhotonPlayer who sent the event. 
+    /// It is best practice to assign a eventCode for each different type of content and action. You have to cast the content.
     ///
     /// The eventContent is optional. To be able to send something, it must be a "serializable type", something that
     /// the client can turn into a byte[] basically. Most basic types and arrays of them are supported, including

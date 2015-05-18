@@ -8,9 +8,19 @@ http://doc.exitgames.com
 http://forum.exitgames.com
 
 
+*** Version 4.0.0.9 (12. February 2015 - rev2797)
+    Fixed: The wrapper classes for the native sockets now do a Sleep(15) when there's nothing to receive. This reduces CPU load considerably.
+	Fixed: Unity library SocketWebTcp class for websocket support. It requires a coroutine on a new GameObject which is now marked as DontDestroyOnLoad(go) and survives scene loading.
+	Fixed: The Windows 8 SDKs now include the release assemblies. This makes sure you can submit your app to the Windows Store.
+LoadBalancing (Realtime and Turnbased API)
+    Added: GamePropertyKey.MasterClientId (248) and ParameterCode.MasterClientId (203)
+    Added: ParameterCode.ExpectedValues (231)
+	Added: ParameterCode.SuppressRoomEvents (237)
+	Updated: Description for IsConnectedAndReady.
+
+
 *** Version 4.0.0.8 (14. January 2015 - rev2765)
     Fixed: Serialization of custom types with nested Serialize-calls. In this case, re-using a specific memory stream breaks it.
-
 
 *** Version 4.0.0.7 (12. January 2015 - rev2763)
     Fixed: Serialization of arrays of custom-types.

@@ -1,3 +1,17 @@
+v1.51 (17. March 2015)
+Updated: PUN+ with a new native socket lib for iOS 32bit and 64bit. Please note: You need Unity 4.6.3p2 (or newer) to successfully export PUN+ to iOS! Before that "Patch 2" release, the new export did not work with PUN+.
+Fixed: PhotonAnimatorViewEditor for compatibility with Unity 5. Now Layers and Parameters can be configured as expected.
+Changed: A PhotonView that is created manually (by AddComponent()) will not attempt to register itself with PUN's internal list. Its viewID is 0. When you assign an ID to photonView.viewID, then it will register itself and can be found in PhotonView.Find(id). Make sure your IDs don't clash with IDs used in PhotonViews in the scene (1..999). Best, use PhotonView.AllocateViewID().
+Removed: A debug log in PhotonNetwork.networkingPeer.RegisterPhotonView(view) when you attempt to re-register a PhotonView and it's already in the list. This special case does not need logging.
+Updated: Several links to online docs, as the URLs changed. The basis is: http://doc.exitgames.com/en/pun
+Updated: Doc of PhotonNetwork.RaiseEvent. The EventCallback description here was wrong. In the callback you get the ID of the PhotonPlayer who raised the event. It might be 0 for "done on behalf of the room".
+Fixed: OnPhotonCreateRoomFailed gets the 2 extra parameters (return code and  message) in all cases now.
+Added: Initial implementation of "CAS for Properties". This allows "Check And Swap" for SetCustomProperties. This should be a nice tool when any client can change a value and you want to make sure only one will succeed (can be picking up a item, making a kill, etc).
+
+
+v1.50.3 (14. January 2015)
+Fixed: Custom serialization with nested Protocol.Serialize() calls. The change in 1.50 to re-use a MemoryStream has unpredictable results in this case.
+
 v1.50.2 (13. January 2015)
 Fixed: Arrays of Custom Types can be sent again. Serialization failed for (e.g.) Vector3[] and is now fixed. (This is a fix in: Assets\Plugins\Photon3Unity3D.dll and it's platform-specific variants).
 Fixed: When leaving a room, GameObjects created by InstantiateSceneObject() will be cleaned up (destroyed). For this, the PhotonViews now have a new (internal!) value isRuntimeInstantiated. Objects loaded with the scene are not cleaned up (as before).

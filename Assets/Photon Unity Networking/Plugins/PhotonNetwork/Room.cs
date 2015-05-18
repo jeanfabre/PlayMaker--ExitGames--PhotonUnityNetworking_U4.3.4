@@ -77,7 +77,7 @@ public class Room : RoomInfo
 
             if (value != this.maxPlayersField && !PhotonNetwork.offlineMode)
             {
-                PhotonNetwork.networkingPeer.OpSetPropertiesOfRoom(new Hashtable() { { GameProperties.MaxPlayers, (byte)value } }, true, (byte)0);
+                PhotonNetwork.networkingPeer.OpSetPropertiesOfRoom(new Hashtable() { { GameProperties.MaxPlayers, (byte)value } }, true, (byte)0, null);
             }
 
             this.maxPlayersField = (byte)value;
@@ -108,7 +108,7 @@ public class Room : RoomInfo
 
             if (value != this.openField && !PhotonNetwork.offlineMode)
             {
-                PhotonNetwork.networkingPeer.OpSetPropertiesOfRoom(new Hashtable() { { GameProperties.IsOpen, value } }, true, (byte)0);
+                PhotonNetwork.networkingPeer.OpSetPropertiesOfRoom(new Hashtable() { { GameProperties.IsOpen, value } }, true, (byte)0, null);
             }
 
             this.openField = value;
@@ -136,7 +136,7 @@ public class Room : RoomInfo
 
             if (value != this.visibleField && !PhotonNetwork.offlineMode)
             {
-                PhotonNetwork.networkingPeer.OpSetPropertiesOfRoom(new Hashtable() { { GameProperties.IsVisible, value } }, true, (byte)0);
+                PhotonNetwork.networkingPeer.OpSetPropertiesOfRoom(new Hashtable() { { GameProperties.IsVisible, value } }, true, (byte)0, null);
             }
 
             this.visibleField = value;
@@ -214,6 +214,22 @@ public class Room : RoomInfo
         NetworkingPeer.SendMonoMessage(PhotonNetworkingMessage.OnPhotonCustomRoomPropertiesChanged, propertiesToSet);
     }
 
+    public void SetCustomProperties(Hashtable propertiesToSet, Hashtable expectedValues)
+    {
+        if (propertiesToSet == null)
+        {
+            return;
+        }
+
+        if (!PhotonNetwork.offlineMode)
+        {
+            Hashtable customProps = propertiesToSet.StripToStringKeys() as Hashtable;
+            Hashtable customPropsToCheck = expectedValues.StripToStringKeys() as Hashtable;
+            PhotonNetwork.networkingPeer.OpSetPropertiesOfRoom(customProps, false, 0, customPropsToCheck);  // broadcast is always on for CAS
+        }
+        NetworkingPeer.SendMonoMessage(PhotonNetworkingMessage.OnPhotonCustomRoomPropertiesChanged, propertiesToSet);
+    }
+
     /// <summary>
     /// Enables you to define the properties available in the lobby if not all properties are needed to pick a room.
     /// </summary>
@@ -225,7 +241,7 @@ public class Room : RoomInfo
     {
         Hashtable customProps = new Hashtable();
         customProps[GameProperties.PropsListedInLobby] = propsListedInLobby;
-        PhotonNetwork.networkingPeer.OpSetPropertiesOfRoom(customProps, false, 0);
+        PhotonNetwork.networkingPeer.OpSetPropertiesOfRoom(customProps, false, 0, null);
 
         this.propertiesListedInLobby = propsListedInLobby;
     }

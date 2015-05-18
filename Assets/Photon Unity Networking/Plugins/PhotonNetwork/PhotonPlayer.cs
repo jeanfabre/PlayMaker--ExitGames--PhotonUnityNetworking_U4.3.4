@@ -201,6 +201,22 @@ public class PhotonPlayer
         NetworkingPeer.SendMonoMessage(PhotonNetworkingMessage.OnPhotonPlayerPropertiesChanged, this, propertiesToSet);
     }
 
+    public void SetCustomProperties(Hashtable propertiesToSet, Hashtable expectedValues)
+    {
+        if (propertiesToSet == null)
+        {
+            return;
+        }
+
+        if (this.actorID > 0 && !PhotonNetwork.offlineMode)
+        {
+            Hashtable customProps = propertiesToSet.StripToStringKeys() as Hashtable;
+            Hashtable customPropsToCheck = expectedValues.StripToStringKeys() as Hashtable;
+            PhotonNetwork.networkingPeer.OpSetPropertiesOfActor(this.actorID, customProps, false, 0, customPropsToCheck);
+        }
+        NetworkingPeer.SendMonoMessage(PhotonNetworkingMessage.OnPhotonPlayerPropertiesChanged, this, propertiesToSet);
+    }
+
     /// <summary>
     /// Try to get a specific player by id.
     /// </summary>

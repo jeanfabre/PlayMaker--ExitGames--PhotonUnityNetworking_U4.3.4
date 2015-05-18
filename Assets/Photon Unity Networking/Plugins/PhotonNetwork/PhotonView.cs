@@ -29,21 +29,21 @@ public enum OnSerializeRigidBody { OnlyVelocity, OnlyAngularVelocity, All }
 /// <remarks>
 /// This setting affects how RequestOwnership and TransferOwnership work at runtime.
 /// </remarks>
-public enum OwnershipOption 
-{ 
+public enum OwnershipOption
+{
     /// <summary>
     /// Ownership is fixed. Instantiated objects stick with their creator, scene objects always belong to the Master Client.
     /// </summary>
-    Fixed, 
+    Fixed,
     /// <summary>
-    /// Ownership can be taken away from the current owner who can't object. 
+    /// Ownership can be taken away from the current owner who can't object.
     /// </summary>
-    Takeover, 
+    Takeover,
     /// <summary>
     /// Ownership can be requested with PhotonView.RequestOwnership but the current owner has to agree to give up ownership.
     /// </summary>
     /// <remarks>The current owner has to implement IPunCallbacks.OnOwnershipRequest to react to the ownership request.</remarks>
-    Request 
+    Request
 }
 
 
@@ -126,7 +126,7 @@ public class PhotonView : Photon.MonoBehaviour
 
     /// <summary>Defines if ownership of this PhotonView is fixed, can be requested or simply taken.</summary>
     /// <remarks>
-    /// Note that you can't edit this value at runtime. 
+    /// Note that you can't edit this value at runtime.
     /// The options are described in enum OwnershipOption.
     /// The current owner has to implement IPunCallbacks.OnOwnershipRequest to react to the ownership request.
     /// </remarks>
@@ -135,7 +135,7 @@ public class PhotonView : Photon.MonoBehaviour
     public List<Component> ObservedComponents;
     Dictionary<Component, MethodInfo> m_OnSerializeMethodInfos = new Dictionary<Component, MethodInfo>();
 
-    //These fields are only used in the CustomEditor for this script and would trigger a 
+    //These fields are only used in the CustomEditor for this script and would trigger a
     //"this variable is never used" warning, which I am suppressing here
 #pragma warning disable 0414
     [SerializeField]
@@ -191,8 +191,8 @@ public class PhotonView : Photon.MonoBehaviour
     /// </summary>
     /// <remarks>
     /// The owner/controller of a PhotonView is also the client which sends position updates of the GameObject.
-    /// 
-    /// Ownership can be transferred to another player with PhotonView.TransferOwnership or any player can request 
+    ///
+    /// Ownership can be transferred to another player with PhotonView.TransferOwnership or any player can request
     /// ownership by calling the PhotonView's RequestOwnership method.
     /// The current owner has to implement IPunCallbacks.OnOwnershipRequest to react to the ownership request.
     /// </remarks>
@@ -231,7 +231,7 @@ public class PhotonView : Photon.MonoBehaviour
             return (this.ownerId == PhotonNetwork.player.ID) || (!this.isOwnerActive && PhotonNetwork.isMasterClient);
         }
     }
-    
+
     protected internal bool didAwake;
 
     [SerializeField]
@@ -242,10 +242,13 @@ public class PhotonView : Photon.MonoBehaviour
     /// <summary>Called by Unity on start of the application and does a setup the PhotonView.</summary>
     protected internal void Awake()
     {
-        // registration might be too late when some script (on this GO) searches this view BUT GetPhotonView() can search ALL in that case
-        PhotonNetwork.networkingPeer.RegisterPhotonView(this);
+        if (this.viewID != 0)
+        {
+            // registration might be too late when some script (on this GO) searches this view BUT GetPhotonView() can search ALL in that case
+            PhotonNetwork.networkingPeer.RegisterPhotonView(this);
+            this.instantiationDataField = PhotonNetwork.networkingPeer.FetchInstantiationData(this.instantiationId);
+        }
 
-        this.instantiationDataField = PhotonNetwork.networkingPeer.FetchInstantiationData(this.instantiationId);
         this.didAwake = true;
     }
 
@@ -255,7 +258,7 @@ public class PhotonView : Photon.MonoBehaviour
     /// <remarks>
     /// Requesting ownership can give you control over a PhotonView, if the ownershipTransfer setting allows that.
     /// The current owner might have to implement IPunCallbacks.OnOwnershipRequest to react to the ownership request.
-    /// 
+    ///
     /// The owner/controller of a PhotonView is also the client which sends position updates of the GameObject.
     /// </remarks>
     public void RequestOwnership()

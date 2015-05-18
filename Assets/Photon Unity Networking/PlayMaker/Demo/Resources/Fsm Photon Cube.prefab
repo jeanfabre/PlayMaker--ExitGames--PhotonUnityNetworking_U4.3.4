@@ -5,7 +5,7 @@ GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 3
+  serializedVersion: 4
   m_Component:
   - 4: {fileID: 400000}
   - 33: {fileID: 3300000}
@@ -21,7 +21,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &400000
 Transform:
   m_ObjectHideFlags: 1
@@ -51,6 +51,9 @@ Renderer:
   m_UseLightProbes: 0
   m_LightProbeAnchor: {fileID: 0}
   m_ScaleInLightmap: 1
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_SortingLayerID: 0
 --- !u!33 &3300000
 MeshFilter:
   m_ObjectHideFlags: 1
@@ -93,17 +96,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 100000}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 1}
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
   m_Name: 
-  subId: 0
+  m_EditorClassIdentifier: 
   ownerId: 0
   group: 0
   prefixBackup: -1
-  observed: {fileID: 11400002}
+  observed: {fileID: 0}
   synchronization: 1
   onSerializeTransformOption: 3
   onSerializeRigidBodyOption: 2
+  ownershipTransfer: 0
+  ObservedComponents:
+  - {fileID: 11400002}
+  ObservedComponentsFoldoutOpen: 1
+  viewIdField: 0
   instantiationId: -1
+  isRuntimeInstantiated: 0
 --- !u!114 &11400002
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -112,8 +121,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 100000}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1384774831, guid: e743331561ef77147ae48cda9bcb8209, type: 1}
+  m_Script: {fileID: 1384774831, guid: e743331561ef77147ae48cda9bcb8209, type: 3}
   m_Name: 
+  m_EditorClassIdentifier: 
   fsm:
     usedInTemplate: {fileID: 0}
     name: Photon Network Synch FSM
@@ -129,6 +139,7 @@ MonoBehaviour:
         width: 100
         height: 48
       isBreakpoint: 0
+      isSequence: 0
       hideUnused: 0
       transitions:
       - fsmEvent:
@@ -176,6 +187,15 @@ MonoBehaviour:
         fsmStringParams: []
         fsmObjectParams: []
         fsmVarParams: []
+        fsmFloatParams: []
+        fsmIntParams: []
+        fsmBoolParams: []
+        fsmVector2Params: []
+        fsmVector3Params: []
+        fsmColorParams: []
+        fsmRectParams: []
+        fsmQuaternionParams: []
+        stringParams: []
         byteData: 00015945534e4f
         arrayParamSizes: 
         arrayParamTypes: []
@@ -199,6 +219,7 @@ MonoBehaviour:
         width: 230
         height: 32
       isBreakpoint: 0
+      isSequence: 0
       hideUnused: 0
       transitions:
       - fsmEvent:
@@ -262,6 +283,15 @@ MonoBehaviour:
         fsmStringParams: []
         fsmObjectParams: []
         fsmVarParams: []
+        fsmFloatParams: []
+        fsmIntParams: []
+        fsmBoolParams: []
+        fsmVector2Params: []
+        fsmVector3Params: []
+        fsmColorParams: []
+        fsmRectParams: []
+        fsmQuaternionParams: []
+        stringParams: []
         byteData: 52414e444f4d495a450000803f0000
         arrayParamSizes: 
         arrayParamTypes: []
@@ -285,6 +315,7 @@ MonoBehaviour:
         width: 208
         height: 16
       isBreakpoint: 0
+      isSequence: 0
       hideUnused: 0
       transitions: []
       actionData:
@@ -400,6 +431,15 @@ MonoBehaviour:
           typeName: 
           value: {fileID: 0}
         fsmVarParams: []
+        fsmFloatParams: []
+        fsmIntParams: []
+        fsmBoolParams: []
+        fsmVector2Params: []
+        fsmVector3Params: []
+        fsmColorParams: []
+        fsmRectParams: []
+        fsmQuaternionParams: []
+        stringParams: []
         byteData: 0000000001666c6f6174202873796e63686564290000000001696e74202873796e63686564290001626f6f6c202873796e63686564290000000001626f6f6c20617320696e7400000000000100000000010000000001626f6f6c20617320696e7400000000000000000000000000000000000000803f01636f6c6f72202873796e636865642901
         arrayParamSizes: 00000000000000000000000000000000
         arrayParamTypes:
@@ -451,6 +491,7 @@ MonoBehaviour:
         width: 130
         height: 32
       isBreakpoint: 0
+      isSequence: 0
       hideUnused: 0
       transitions:
       - fsmEvent:
@@ -507,6 +548,15 @@ MonoBehaviour:
           typeName: 
           value: {fileID: 0}
         fsmVarParams: []
+        fsmFloatParams: []
+        fsmIntParams: []
+        fsmBoolParams: []
+        fsmVector2Params: []
+        fsmVector3Params: []
+        fsmColorParams: []
+        fsmRectParams: []
+        fsmQuaternionParams: []
+        stringParams: []
         byteData: 0000803f00000000000000000000803f00000000000000803fa83ed33e0000803f000495b33e5a3c413f0000803f0000803f000000803f000000803f000000803f000000000000000000000000000000803f01636f6c6f72202873796e636865642900000000000000000000000000000000000000803f01636f6c6f72202873796e6368656429000000803f0000803f0000803f0000000040000000400000004000000040400000404000004040000000803f000000803f000000803f0000000000000000000000000001766563746f7233202873796e6368656429
         arrayParamSizes: 03000000030000000300000003000000
         arrayParamTypes:
@@ -643,6 +693,7 @@ MonoBehaviour:
     showStateLabel: 1
     maxLoopCount: 0
     watermark: 
+    version: 0
     ExposedEvents: []
     RestartOnEnable: 1
     EnableDebugFlow: 0
@@ -657,8 +708,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 100000}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 19a21220299d849abaffd33cc04a657b, type: 1}
+  m_Script: {fileID: 11500000, guid: 19a21220299d849abaffd33cc04a657b, type: 3}
   m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &100100000
 Prefab:
   m_ObjectHideFlags: 1

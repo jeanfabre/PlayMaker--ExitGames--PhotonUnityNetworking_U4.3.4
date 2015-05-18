@@ -134,7 +134,7 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
 
     /// <summary>Stat value: Count of Players in rooms</summary>
     public int mPlayersInRoomsCount { get; internal set; }
-    
+
     private HashSet<int> allowedReceivingGroups = new HashSet<int>();
 
     private HashSet<int> blockSendingGroups = new HashSet<int>();
@@ -184,6 +184,8 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
 
     public NetworkingPeer(IPhotonPeerListener listener, string playername, ConnectionProtocol connectionProtocol) : base(listener, connectionProtocol)
     {
+        // TODO: CAS must be implemented for OfflineMode
+
         #if !UNITY_EDITOR && (UNITY_WINRT)
         // this automatically uses a separate assembly-file with Win8-style Socket usage (not possible in Editor)
         Debug.LogWarning("Using PingWindowsStore");
@@ -511,7 +513,7 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
                     instantiatedGos.Add(view.gameObject); // HashSet keeps each object only once
                 }
             }
-            
+
             foreach (GameObject go in instantiatedGos)
             {
                 this.RemoveInstantiatedGO(go, true);
@@ -813,7 +815,7 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
             properties[ActorProperties.PlayerName] = this.PlayerName;
             if (this.mLocalActor.ID > 0)
             {
-                this.OpSetPropertiesOfActor(this.mLocalActor.ID, properties, true, (byte)0);
+                this.OpSetPropertiesOfActor(this.mLocalActor.ID, properties, true, (byte)0, null);
                 this.mPlayernameHasToBeUpdated = false;
             }
         }
@@ -1207,7 +1209,7 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
                             if (PhotonNetwork.logLevel >= PhotonLogLevel.Informational)
                                 Debug.LogWarning(string.Format("CreateRoom failed, client stays on masterserver: {0}.", operationResponse.ToStringFull()));
 
-                            SendMonoMessage(PhotonNetworkingMessage.OnPhotonCreateRoomFailed);
+                            SendMonoMessage(PhotonNetworkingMessage.OnPhotonCreateRoomFailed, operationResponse.ReturnCode, operationResponse.DebugMessage);
                             break;
                         }
 
@@ -2390,7 +2392,7 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
         }
 
         this.RemoveInstantiationData(instantiationId);
-        
+
         // Send OnPhotonInstantiate callback to newly created GO.
         // GO will be enabled when instantiated from Prefab and it does not matter if the script is enabled or disabled.
         go.SendMessage(PhotonNetworkingMessage.OnPhotonInstantiate.ToString(), new PhotonMessageInfo(photonPlayer, serverTime, null), SendMessageOptions.DontRequireReceiver);
@@ -2707,8 +2709,11 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
             {
                 Debug.LogError(string.Format("PhotonView ID duplicate found: {0}. New: {1} old: {2}. Maybe one wasn't destroyed on scene load?! Check for 'DontDestroyOnLoad'. Destroying old entry, adding new.", netView.viewID, netView, photonViewList[netView.viewID]));
             }
+            else
+            {
+                return;
+            }
 
-            //this.photonViewList.Remove(netView.viewID); // TODO check if we chould Destroy the GO of this view?!
             this.RemoveInstantiatedGO(photonViewList[netView.viewID].gameObject, true);
         }
 
@@ -2717,7 +2722,9 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
         //Debug.LogError("view being added. " + netView);	// Exit Games internal log
 
         if (PhotonNetwork.logLevel >= PhotonLogLevel.Full)
+        {
             Debug.Log("Registered PhotonView: " + netView.viewID);
+        }
     }
 
     ///// <summary>

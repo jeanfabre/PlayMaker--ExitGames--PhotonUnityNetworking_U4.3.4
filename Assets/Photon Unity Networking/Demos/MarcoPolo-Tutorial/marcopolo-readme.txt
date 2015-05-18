@@ -7,7 +7,7 @@ The Marco Polo Tutorial
 
 
 The step-by-step guide can be found here:
-	http://doc.exitgames.com/photon-cloud/Marco_Polo_Tutorial
+	http://doc.exitgames.com/en/pun/current/tutorials/tutorial-marco-polo
 
 
 Disclaimer

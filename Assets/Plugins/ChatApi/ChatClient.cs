@@ -336,11 +336,11 @@ namespace ExitGames.Client.Photon.Chat
         /// <remarks>
         /// The predefined status values can be found in class ChatUserStatus.
         /// State ChatUserStatus.Invisible will make you offline for everyone and send no message.
-        /// 
-        /// You can set custom values in the status integer. Aside from the pre-configured ones, 
+        ///
+        /// You can set custom values in the status integer. Aside from the pre-configured ones,
         /// all states will be considered visible and online. Else, no one would see the custom state.
-        /// 
-        /// The message object can be anything that Photon can serialize, including (but not limited to) 
+        ///
+        /// The message object can be anything that Photon can serialize, including (but not limited to)
         /// Hashtable, object[] and string. This value is defined by your own conventions.
         /// </remarks>
         /// <param name="status">Predefined states are in class ChatUserStatus. Other values can be used at will.</param>
@@ -375,10 +375,10 @@ namespace ExitGames.Client.Photon.Chat
         /// <remarks>
         /// The predefined status values can be found in class ChatUserStatus.
         /// State ChatUserStatus.Invisible will make you offline for everyone and send no message.
-        /// 
-        /// You can set custom values in the status integer. Aside from the pre-configured ones, 
+        ///
+        /// You can set custom values in the status integer. Aside from the pre-configured ones,
         /// all states will be considered visible and online. Else, no one would see the custom state.
-        /// 
+        ///
         /// This overload does not change the set message.
         /// </remarks>
         /// <param name="status">Predefined states are in class ChatUserStatus. Other values can be used at will.</param>
@@ -391,11 +391,11 @@ namespace ExitGames.Client.Photon.Chat
         /// <remarks>
         /// The predefined status values can be found in class ChatUserStatus.
         /// State ChatUserStatus.Invisible will make you offline for everyone and send no message.
-        /// 
-        /// You can set custom values in the status integer. Aside from the pre-configured ones, 
+        ///
+        /// You can set custom values in the status integer. Aside from the pre-configured ones,
         /// all states will be considered visible and online. Else, no one would see the custom state.
-        /// 
-        /// The message object can be anything that Photon can serialize, including (but not limited to) 
+        ///
+        /// The message object can be anything that Photon can serialize, including (but not limited to)
         /// Hashtable, object[] and string. This value is defined by your own conventions.
         /// </remarks>
         /// <param name="status">Predefined states are in class ChatUserStatus. Other values can be used at will.</param>
@@ -413,19 +413,19 @@ namespace ExitGames.Client.Photon.Chat
         /// AddFriends and RemoveFriends enable clients to handle their friend list
         /// in the Photon Chat server. Having users on your friends list gives you access
         /// to their current online status (and whatever info your client sets in it).
-        /// 
-        /// Each user can set an online status consisting of an integer and an arbitratry 
+        ///
+        /// Each user can set an online status consisting of an integer and an arbitratry
         /// (serializable) object. The object can be null, Hashtable, object[] or anything
         /// else Photon can serialize.
-        /// 
+        ///
         /// The status is published automatically to friends (anyone who set your user ID
         /// with AddFriends).
-        /// 
-        /// Photon flushes friends-list when a chat client disconnects, so it has to be 
+        ///
+        /// Photon flushes friends-list when a chat client disconnects, so it has to be
         /// set each time. If your community API gives you access to online status already,
         /// you could filter and set online friends in AddFriends.
-        /// 
-        /// Actual friend relations are not persistent and have to be stored outside 
+        ///
+        /// Actual friend relations are not persistent and have to be stored outside
         /// of Photon.
         /// </remarks>
         /// <param name="friends">Array of friend userIds.</param>
@@ -455,40 +455,40 @@ namespace ExitGames.Client.Photon.Chat
         /// Removes the provided entries from the list on the Chat Server and stops their status updates.
         /// </summary>
         /// <remarks>
-        /// Photon flushes friends-list when a chat client disconnects. Unless you want to 
+        /// Photon flushes friends-list when a chat client disconnects. Unless you want to
         /// remove individual entries, you don't have to RemoveFriends.
-        /// 
+        ///
         /// AddFriends and RemoveFriends enable clients to handle their friend list
         /// in the Photon Chat server. Having users on your friends list gives you access
         /// to their current online status (and whatever info your client sets in it).
-        /// 
-        /// Each user can set an online status consisting of an integer and an arbitratry 
+        ///
+        /// Each user can set an online status consisting of an integer and an arbitratry
         /// (serializable) object. The object can be null, Hashtable, object[] or anything
         /// else Photon can serialize.
-        /// 
+        ///
         /// The status is published automatically to friends (anyone who set your user ID
         /// with AddFriends).
-        /// 
-        /// Photon flushes friends-list when a chat client disconnects, so it has to be 
+        ///
+        /// Photon flushes friends-list when a chat client disconnects, so it has to be
         /// set each time. If your community API gives you access to online status already,
         /// you could filter and set online friends in AddFriends.
-        /// 
-        /// Actual friend relations are not persistent and have to be stored outside 
+        ///
+        /// Actual friend relations are not persistent and have to be stored outside
         /// of Photon.
-        /// 
+        ///
         /// AddFriends and RemoveFriends enable clients to handle their friend list
         /// in the Photon Chat server. Having users on your friends list gives you access
         /// to their current online status (and whatever info your client sets in it).
-        /// 
-        /// Each user can set an online status consisting of an integer and an arbitratry 
+        ///
+        /// Each user can set an online status consisting of an integer and an arbitratry
         /// (serializable) object. The object can be null, Hashtable, object[] or anything
         /// else Photon can serialize.
-        /// 
+        ///
         /// The status is published automatically to friends (anyone who set your user ID
         /// with AddFriends).
-        /// 
-        /// 
-        /// Actual friend relations are not persistent and have to be stored outside 
+        ///
+        ///
+        /// Actual friend relations are not persistent and have to be stored outside
         /// of Photon.
         /// </remarks>
         /// <param name="friends">Array of friend userIds.</param>

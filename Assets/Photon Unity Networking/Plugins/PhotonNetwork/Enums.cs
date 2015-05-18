@@ -350,7 +350,7 @@ public enum PhotonNetworkingMessage
     /// During development of a game, it might also fail due to wrong configuration on the server side. 
     /// In those cases, logging the debugMessage is very important. 
     /// 
-    /// Unless you setup a custom authentication service for your app (in the [Dashboard](https://cloud.exitgames.com/dashboard)), 
+    /// Unless you setup a custom authentication service for your app (in the [Dashboard](https://www.exitgames.com/dashboard)), 
     /// this won't be called! 
     /// 
     /// Example: void OnCustomAuthenticationFailed(string debugMessage) { ... }
