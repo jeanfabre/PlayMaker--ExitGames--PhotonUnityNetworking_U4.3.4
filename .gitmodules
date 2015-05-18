@@ -4,3 +4,6 @@
 [submodule "Assets/PlayMaker ArrayMaker"]
 	path = Assets/PlayMaker ArrayMaker
 	url = https://jeanfabre@github.com/jeanfabre/PlayMaker--ArrayMaker--U4.3.4-SubModule-.git
+[submodule "Assets/PlayMaker PUN"]
+	path = Assets/PlayMaker PUN
+	url = https://jeanfabre@github.com/jeanfabre/PlayMaker--ExitGames--PhotonUnityNetworking_U4.3.4-Library-.git
