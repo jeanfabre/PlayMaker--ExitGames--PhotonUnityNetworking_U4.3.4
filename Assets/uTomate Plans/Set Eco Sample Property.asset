@@ -20,7 +20,7 @@ MonoBehaviour:
     useExpression: 0
     expression: 
     propertyValue: /Users/jeanfabre/work/Unity/resources/utilities/playmaker/Ecosystem/PlayMakerCustomActions_U4/PlayMaker/Ecosystem/Custom
-      Samples/ExitGames/
+      Samples/PhotonUnityNetworking/
   onlyIfUnset:
     useExpression: 0
     expression: 

@@ -9,7 +9,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5743521803b514353beb91c4e7841ea0, type: 3}
-  m_Name: Export PlayMaker PUN Demos
+  m_Name: Export PlayMaker PUN DemoWorker
   m_EditorClassIdentifier: 
   CreatedWithActionVersion: 1.1
   includes:
@@ -18,7 +18,7 @@ MonoBehaviour:
     propertyValue: Photon Unity Networking/Demos/DemoWorker/**
   - useExpression: 0
     expression: 
-    propertyValue: PlayMaker Custom Samples/Photon/SimplePlayer/**
+    propertyValue: PlayMaker Custom Samples/PhotonUnityNetworking/DemoWorker/**
   - useExpression: 0
     expression: 
     propertyValue: PlayMaker Custom Actions/__Internal/**
@@ -45,5 +45,5 @@ MonoBehaviour:
   settingsExcludes: []
   outputFileName:
     useExpression: 1
-    expression: $SampleOutputFolder + "PUNSampleWorkerDemo.unitypackage"
+    expression: $SampleOutputFolder + "PUNDemoWorker.unitypackage"
     propertyValue: PlayMakerPhotonSample.unitypackage
