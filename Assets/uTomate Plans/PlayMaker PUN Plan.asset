@@ -8,10 +8,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6e24a62eb5d524cd3b323c691e8e55a5, type: 1}
+  m_Script: {fileID: 11500000, guid: 6e24a62eb5d524cd3b323c691e8e55a5, type: 3}
   m_Name: PlayMaker PUN Plan
+  m_EditorClassIdentifier: 
   automationPlanId: c2d7e768-d3dc-454d-a4ad-4e1da7413b0f
-  firstEntry: {fileID: 11400006}
+  firstEntry: {fileID: 11400010}
   hideInExecutionWindow: 0
 --- !u!114 &11400002
 MonoBehaviour:
@@ -21,37 +22,68 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8335df163f4fa433c8a67415db6de35f, type: 1}
+  m_Script: {fileID: 11500000, guid: 8335df163f4fa433c8a67415db6de35f, type: 3}
   m_Name: Graph
+  m_EditorClassIdentifier: 
   nodes:
   - bounds:
       serializedVersion: 2
-      x: 119
-      y: 201
-      width: 200
-      height: 57
-    data: {fileID: 11400004}
-  - bounds:
-      serializedVersion: 2
-      x: 122
-      y: 96
+      x: 20
+      y: 194
       width: 200
       height: 57
     data: {fileID: 11400006}
   - bounds:
       serializedVersion: 2
-      x: 212
-      y: 355
+      x: 20
+      y: 348
       width: 200
       height: 57
     data: {fileID: 11400008}
+  - bounds:
+      serializedVersion: 2
+      x: 20
+      y: 40
+      width: 200
+      height: 57
+    data: {fileID: 11400010}
+  - bounds:
+      serializedVersion: 2
+      x: 20
+      y: 271
+      width: 200
+      height: 57
+    data: {fileID: 11400004}
+  - bounds:
+      serializedVersion: 2
+      x: 20
+      y: 117
+      width: 200
+      height: 57
+    data: {fileID: 11400012}
+  - bounds:
+      serializedVersion: 2
+      x: 39
+      y: 448
+      width: 200
+      height: 57
+    data: {fileID: 11400014}
   references:
   - source: {fileID: 11400006}
     sourceProperty: nextEntry
     target: {fileID: 11400004}
+  - source: {fileID: 11400010}
+    sourceProperty: nextEntry
+    target: {fileID: 11400012}
   - source: {fileID: 11400004}
     sourceProperty: nextEntry
     target: {fileID: 11400008}
+  - source: {fileID: 11400012}
+    sourceProperty: nextEntry
+    target: {fileID: 11400006}
+  - source: {fileID: 11400008}
+    sourceProperty: nextEntry
+    target: {fileID: 11400014}
 --- !u!114 &11400004
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -60,9 +92,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2e716dc6c1dc44510b48cd9a02e13bd5, type: 1}
+  m_Script: {fileID: 11500000, guid: 2e716dc6c1dc44510b48cd9a02e13bd5, type: 3}
   m_Name: 
-  automationPlanEntryId: ed247962-6c69-458c-8e63-763aa8efb0e6
+  m_EditorClassIdentifier: 
+  automationPlanEntryId: 88070882-e6b1-4a6c-9aad-0950e88ccd94
   nextEntry: {fileID: 11400008}
   action: {fileID: 11400000, guid: 42613254c9625433fb21431baf9af156, type: 2}
 --- !u!114 &11400006
@@ -73,8 +106,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2e716dc6c1dc44510b48cd9a02e13bd5, type: 1}
+  m_Script: {fileID: 11500000, guid: 2e716dc6c1dc44510b48cd9a02e13bd5, type: 3}
   m_Name: 
+  m_EditorClassIdentifier: 
   automationPlanEntryId: b674f7d1-51f3-4c67-8d88-2c6bd46eaba4
   nextEntry: {fileID: 11400004}
   action: {fileID: 11400000, guid: 2a47dbfb98d0446d7ba9c04541d9fa9d, type: 2}
@@ -86,8 +120,51 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2e716dc6c1dc44510b48cd9a02e13bd5, type: 1}
+  m_Script: {fileID: 11500000, guid: 2e716dc6c1dc44510b48cd9a02e13bd5, type: 3}
   m_Name: 
+  m_EditorClassIdentifier: 
   automationPlanEntryId: 137b69e0-782c-4e71-8077-9f5c2874c142
-  nextEntry: {fileID: 0}
+  nextEntry: {fileID: 11400014}
   action: {fileID: 11400000, guid: c2e6d2d8b920141bba2da1a2f9cca6c2, type: 2}
+--- !u!114 &11400010
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e716dc6c1dc44510b48cd9a02e13bd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  automationPlanEntryId: c607c51a-d34c-4a9f-8b31-c4b81b96a7f8
+  nextEntry: {fileID: 11400012}
+  action: {fileID: 11400000, guid: 7031ac97d718c4b20aeeb052b8e80964, type: 2}
+--- !u!114 &11400012
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e716dc6c1dc44510b48cd9a02e13bd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  automationPlanEntryId: d6ae1ed8-fc3d-45f4-84cb-9419715c51bd
+  nextEntry: {fileID: 11400006}
+  action: {fileID: 11400000, guid: 27edaebd445cf4cc28f322cdb1dc523e, type: 2}
+--- !u!114 &11400014
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e716dc6c1dc44510b48cd9a02e13bd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  automationPlanEntryId: 060c60fe-9e3b-498a-be0c-f9cb165ca189
+  nextEntry: {fileID: 0}
+  action: {fileID: 11400000, guid: 7f059ae46a03540eda014d934cefa653, type: 2}

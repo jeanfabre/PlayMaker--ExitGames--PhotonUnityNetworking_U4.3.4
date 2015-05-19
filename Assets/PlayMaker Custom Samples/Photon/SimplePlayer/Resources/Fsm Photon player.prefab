@@ -875,7 +875,6 @@ GameObject:
   - 114: {fileID: 11400012}
   - 114: {fileID: 11400014}
   - 114: {fileID: 11400020}
-  - 114: {fileID: 11400022}
   - 114: {fileID: 11400002}
   - 114: {fileID: 11400016}
   - 114: {fileID: 11400008}
@@ -1702,15 +1701,6 @@ MonoBehaviour:
         fsmStringParams: []
         fsmObjectParams: []
         fsmVarParams: []
-        fsmFloatParams: []
-        fsmIntParams: []
-        fsmBoolParams: []
-        fsmVector2Params: []
-        fsmVector3Params: []
-        fsmColorParams: []
-        fsmRectParams: []
-        fsmQuaternionParams: []
-        stringParams: []
         byteData: 00015945534e4f
         arrayParamSizes: 
         arrayParamTypes: []
@@ -1789,15 +1779,6 @@ MonoBehaviour:
           value: Position (synched)
         fsmObjectParams: []
         fsmVarParams: []
-        fsmFloatParams: []
-        fsmIntParams: []
-        fsmBoolParams: []
-        fsmVector2Params: []
-        fsmVector3Params: []
-        fsmColorParams: []
-        fsmRectParams: []
-        fsmQuaternionParams: []
-        stringParams: []
         byteData: 00000000000000000000000001706f736974696f6e000000000100000000010000000001000000000100000000000000000000000001706f736974696f6e01
         arrayParamSizes: 
         arrayParamTypes: []
@@ -1839,7 +1820,7 @@ MonoBehaviour:
         actionNames:
         - HutongGames.PlayMaker.Actions.GetPosition
         - HutongGames.PlayMaker.Actions.GetFsmVector3
-        - HutongGames.PlayMaker.Actions.Vector3Lerp2
+        - HutongGames.PlayMaker.Actions.Vector3LerpAdvanced
         - HutongGames.PlayMaker.Actions.SetPosition
         customNames:
         - 
@@ -1848,8 +1829,8 @@ MonoBehaviour:
         - 
         actionEnabled: 01010101
         actionIsOpen: 01010101
-        actionStartIndex: 00000000070000000c00000012000000
-        actionHashCodes: a290608ea7f99b500e805a268b80e9a5
+        actionStartIndex: 00000000070000000c00000013000000
+        actionHashCodes: a290608ea7f99b50af31a1268b80e9a5
         unityObjectParams: []
         fsmGameObjectParams: []
         fsmOwnerDefaultParams:
@@ -1898,21 +1879,12 @@ MonoBehaviour:
           value: Position (synched)
         fsmObjectParams: []
         fsmVarParams: []
-        fsmFloatParams: []
-        fsmIntParams: []
-        fsmBoolParams: []
-        fsmVector2Params: []
-        fsmVector3Params: []
-        fsmColorParams: []
-        fsmRectParams: []
-        fsmQuaternionParams: []
-        stringParams: []
-        byteData: 0000000000000000000000000163757272656e7420706f736974696f6e000000000100000000010000000001000000000100000000000000000000000001706f736974696f6e010000000000000000000000000163757272656e7420706f736974696f6e00000000000000000000000001706f736974696f6e0000a0400001000000000000000000000000016e657720706f736974696f6e01000000000000000000000000016e657720706f736974696f6e000000000100000000010000000001010000000100
+        byteData: 0000000000000000000000000163757272656e7420706f736974696f6e000000000100000000010000000001000000000100000000000000000000000001706f736974696f6e010000000000000000000000000163757272656e7420706f736974696f6e00000000000000000000000001706f736974696f6e0000a0400001000000000000000000000000016e657720706f736974696f6e0000000001000000000000000000000000016e657720706f736974696f6e000000000100000000010000000001010000000100
         arrayParamSizes: 
         arrayParamTypes: []
         customTypeSizes: 
         customTypeNames: []
-        paramDataType: 140000001c0000000f0000000f0000000f00000007000000010000001400000012000000120000001c000000010000001c0000001c0000000f000000010000001c00000001000000140000001c0000000f0000000f0000000f000000070000000100000001000000
+        paramDataType: 140000001c0000000f0000000f0000000f00000007000000010000001400000012000000120000001c000000010000001c0000001c0000000f000000010000001c0000000700000001000000140000001c0000000f0000000f0000000f000000070000000100000001000000
         paramName:
         - gameObject
         - vector
@@ -1931,6 +1903,7 @@ MonoBehaviour:
         - amount
         - lerpAgainstDeltaTime
         - storeResult
+        - updateType
         - everyFrame
         - gameObject
         - vector
@@ -1940,8 +1913,8 @@ MonoBehaviour:
         - space
         - everyFrame
         - lateUpdate
-        paramDataPos: 00000000000000001d00000022000000270000002c0000003000000001000000000000000100000031000000460000004700000064000000790000007e0000007f000000980000000200000099000000b2000000b7000000bc000000c1000000c5000000c6000000
-        paramByteDataSize: 000000001d000000050000000500000005000000040000000100000000000000000000000000000015000000010000001d00000015000000050000000100000019000000010000000000000019000000050000000500000005000000040000000100000001000000
+        paramDataPos: 00000000000000001d00000022000000270000002c0000003000000001000000000000000100000031000000460000004700000064000000790000007e0000007f000000980000009c000000020000009d000000b6000000bb000000c0000000c5000000c9000000ca000000
+        paramByteDataSize: 000000001d000000050000000500000005000000040000000100000000000000000000000000000015000000010000001d0000001500000005000000010000001900000004000000010000000000000019000000050000000500000005000000040000000100000001000000
     events:
     - name: NO
       isSystemEvent: 0
@@ -2055,15 +2028,6 @@ MonoBehaviour:
           value: hello
         fsmObjectParams: []
         fsmVarParams: []
-        fsmFloatParams: []
-        fsmIntParams: []
-        fsmBoolParams: []
-        fsmVector2Params: []
-        fsmVector3Params: []
-        fsmColorParams: []
-        fsmRectParams: []
-        fsmQuaternionParams: []
-        stringParams: []
         byteData: 00000000
         arrayParamSizes: 
         arrayParamTypes: []
@@ -2108,15 +2072,6 @@ MonoBehaviour:
         fsmStringParams: []
         fsmObjectParams: []
         fsmVarParams: []
-        fsmFloatParams: []
-        fsmIntParams: []
-        fsmBoolParams: []
-        fsmVector2Params: []
-        fsmVector3Params: []
-        fsmColorParams: []
-        fsmRectParams: []
-        fsmQuaternionParams: []
-        stringParams: []
         byteData: 
         arrayParamSizes: 
         arrayParamTypes: []
@@ -2353,15 +2308,6 @@ MonoBehaviour:
         fsmStringParams: []
         fsmObjectParams: []
         fsmVarParams: []
-        fsmFloatParams: []
-        fsmIntParams: []
-        fsmBoolParams: []
-        fsmVector2Params: []
-        fsmVector3Params: []
-        fsmColorParams: []
-        fsmRectParams: []
-        fsmQuaternionParams: []
-        stringParams: []
         byteData: 00015945534e4f
         arrayParamSizes: 
         arrayParamTypes: []
@@ -2441,15 +2387,6 @@ MonoBehaviour:
           value: 'Player : '
         fsmObjectParams: []
         fsmVarParams: []
-        fsmFloatParams: []
-        fsmIntParams: []
-        fsmBoolParams: []
-        fsmVector2Params: []
-        fsmVector3Params: []
-        fsmColorParams: []
-        fsmRectParams: []
-        fsmQuaternionParams: []
-        stringParams: []
         byteData: 00
         arrayParamSizes: 02000000
         arrayParamTypes:
@@ -2522,15 +2459,6 @@ MonoBehaviour:
           value: 
         fsmObjectParams: []
         fsmVarParams: []
-        fsmFloatParams: []
-        fsmIntParams: []
-        fsmBoolParams: []
-        fsmVector2Params: []
-        fsmVector3Params: []
-        fsmColorParams: []
-        fsmRectParams: []
-        fsmQuaternionParams: []
-        stringParams: []
         byteData: 000000000100010001
         arrayParamSizes: 0000000000000000
         arrayParamTypes:
@@ -2599,15 +2527,6 @@ MonoBehaviour:
           value: 'Player : '
         fsmObjectParams: []
         fsmVarParams: []
-        fsmFloatParams: []
-        fsmIntParams: []
-        fsmBoolParams: []
-        fsmVector2Params: []
-        fsmVector3Params: []
-        fsmColorParams: []
-        fsmRectParams: []
-        fsmQuaternionParams: []
-        stringParams: []
         byteData: 
         arrayParamSizes: 
         arrayParamTypes: []
@@ -2685,15 +2604,6 @@ MonoBehaviour:
           value: 'Player : '
         fsmObjectParams: []
         fsmVarParams: []
-        fsmFloatParams: []
-        fsmIntParams: []
-        fsmBoolParams: []
-        fsmVector2Params: []
-        fsmVector3Params: []
-        fsmColorParams: []
-        fsmRectParams: []
-        fsmQuaternionParams: []
-        stringParams: []
         byteData: 00
         arrayParamSizes: 02000000
         arrayParamTypes:
@@ -2827,15 +2737,6 @@ MonoBehaviour:
         fsmStringParams: []
         fsmObjectParams: []
         fsmVarParams: []
-        fsmFloatParams: []
-        fsmIntParams: []
-        fsmBoolParams: []
-        fsmVector2Params: []
-        fsmVector3Params: []
-        fsmColorParams: []
-        fsmRectParams: []
-        fsmQuaternionParams: []
-        stringParams: []
         byteData: 00016973206d696e653f
         arrayParamSizes: 
         arrayParamTypes: []
@@ -3001,15 +2902,6 @@ MonoBehaviour:
         fsmStringParams: []
         fsmObjectParams: []
         fsmVarParams: []
-        fsmFloatParams: []
-        fsmIntParams: []
-        fsmBoolParams: []
-        fsmVector2Params: []
-        fsmVector3Params: []
-        fsmColorParams: []
-        fsmRectParams: []
-        fsmQuaternionParams: []
-        stringParams: []
         byteData: 00
         arrayParamSizes: 
         arrayParamTypes: []
@@ -3165,15 +3057,6 @@ MonoBehaviour:
         fsmStringParams: []
         fsmObjectParams: []
         fsmVarParams: []
-        fsmFloatParams: []
-        fsmIntParams: []
-        fsmBoolParams: []
-        fsmVector2Params: []
-        fsmVector3Params: []
-        fsmColorParams: []
-        fsmRectParams: []
-        fsmQuaternionParams: []
-        stringParams: []
         byteData: 00
         arrayParamSizes: 
         arrayParamTypes: []
@@ -3323,15 +3206,6 @@ MonoBehaviour:
         fsmStringParams: []
         fsmObjectParams: []
         fsmVarParams: []
-        fsmFloatParams: []
-        fsmIntParams: []
-        fsmBoolParams: []
-        fsmVector2Params: []
-        fsmVector3Params: []
-        fsmColorParams: []
-        fsmRectParams: []
-        fsmQuaternionParams: []
-        stringParams: []
         byteData: 00015945534e4f
         arrayParamSizes: 
         arrayParamTypes: []
@@ -3410,15 +3284,6 @@ MonoBehaviour:
           value: Rotation (synched)
         fsmObjectParams: []
         fsmVarParams: []
-        fsmFloatParams: []
-        fsmIntParams: []
-        fsmBoolParams: []
-        fsmVector2Params: []
-        fsmVector3Params: []
-        fsmColorParams: []
-        fsmRectParams: []
-        fsmQuaternionParams: []
-        stringParams: []
         byteData: 000000000000000000000000000000000100000000000000000000000001726f746174696f6e000000000100000000010000000001000000000100000000000000000000000001726f746174696f6e01
         arrayParamSizes: 
         arrayParamTypes: []
@@ -3509,15 +3374,6 @@ MonoBehaviour:
           value: Rotation (synched)
         fsmObjectParams: []
         fsmVarParams: []
-        fsmFloatParams: []
-        fsmIntParams: []
-        fsmBoolParams: []
-        fsmVector2Params: []
-        fsmVector3Params: []
-        fsmColorParams: []
-        fsmRectParams: []
-        fsmQuaternionParams: []
-        stringParams: []
         byteData: 00000000000000000000000001726f746174696f6e01000000000000000000000000000000000100000000000000000000000001726f746174696f6e000000000100000000010000000001000000000100
         arrayParamSizes: 
         arrayParamTypes: []
@@ -3667,15 +3523,6 @@ MonoBehaviour:
           value: Fire1
         fsmObjectParams: []
         fsmVarParams: []
-        fsmFloatParams: []
-        fsmIntParams: []
-        fsmBoolParams: []
-        fsmVector2Params: []
-        fsmVector3Params: []
-        fsmColorParams: []
-        fsmRectParams: []
-        fsmQuaternionParams: []
-        stringParams: []
         byteData: 494e4352454d454e540001
         arrayParamSizes: 
         arrayParamTypes: []
@@ -3748,15 +3595,6 @@ MonoBehaviour:
           stringValue: 
           vector4Value: {x: 0, y: 0, z: 0, w: 0}
           objectReference: {fileID: 0}
-        fsmFloatParams: []
-        fsmIntParams: []
-        fsmBoolParams: []
-        fsmVector2Params: []
-        fsmVector3Params: []
-        fsmColorParams: []
-        fsmRectParams: []
-        fsmQuaternionParams: []
-        stringParams: []
         byteData: 00000000014669726520636f756e74010000000000
         arrayParamSizes: 
         arrayParamTypes: []
@@ -3850,15 +3688,6 @@ MonoBehaviour:
           stringValue: 
           vector4Value: {x: 0, y: 0, z: 0, w: 0}
           objectReference: {fileID: 0}
-        fsmFloatParams: []
-        fsmIntParams: []
-        fsmBoolParams: []
-        fsmVector2Params: []
-        fsmVector3Params: []
-        fsmColorParams: []
-        fsmRectParams: []
-        fsmQuaternionParams: []
-        stringParams: []
         byteData: 000000000100010001535543434553534641494c555245
         arrayParamSizes: 0100000001000000
         arrayParamTypes:
@@ -3930,15 +3759,6 @@ MonoBehaviour:
           value: Custom Property not found
         fsmObjectParams: []
         fsmVarParams: []
-        fsmFloatParams: []
-        fsmIntParams: []
-        fsmBoolParams: []
-        fsmVector2Params: []
-        fsmVector3Params: []
-        fsmColorParams: []
-        fsmRectParams: []
-        fsmQuaternionParams: []
-        stringParams: []
         byteData: 02000000
         arrayParamSizes: 
         arrayParamTypes: []
@@ -4015,15 +3835,6 @@ MonoBehaviour:
           value: Fire Count
         fsmObjectParams: []
         fsmVarParams: []
-        fsmFloatParams: []
-        fsmIntParams: []
-        fsmBoolParams: []
-        fsmVector2Params: []
-        fsmVector3Params: []
-        fsmColorParams: []
-        fsmRectParams: []
-        fsmQuaternionParams: []
-        stringParams: []
         byteData: 535543434553534641494c555245
         arrayParamSizes: 
         arrayParamTypes: []
@@ -4077,15 +3888,6 @@ MonoBehaviour:
         fsmStringParams: []
         fsmObjectParams: []
         fsmVarParams: []
-        fsmFloatParams: []
-        fsmIntParams: []
-        fsmBoolParams: []
-        fsmVector2Params: []
-        fsmVector3Params: []
-        fsmColorParams: []
-        fsmRectParams: []
-        fsmQuaternionParams: []
-        stringParams: []
         byteData: 
         arrayParamSizes: 
         arrayParamTypes: []
@@ -4135,15 +3937,6 @@ MonoBehaviour:
         fsmStringParams: []
         fsmObjectParams: []
         fsmVarParams: []
-        fsmFloatParams: []
-        fsmIntParams: []
-        fsmBoolParams: []
-        fsmVector2Params: []
-        fsmVector3Params: []
-        fsmColorParams: []
-        fsmRectParams: []
-        fsmQuaternionParams: []
-        stringParams: []
         byteData: 
         arrayParamSizes: 
         arrayParamTypes: []
@@ -4290,15 +4083,6 @@ MonoBehaviour:
         fsmStringParams: []
         fsmObjectParams: []
         fsmVarParams: []
-        fsmFloatParams: []
-        fsmIntParams: []
-        fsmBoolParams: []
-        fsmVector2Params: []
-        fsmVector3Params: []
-        fsmColorParams: []
-        fsmRectParams: []
-        fsmQuaternionParams: []
-        stringParams: []
         byteData: 00015945534e4f
         arrayParamSizes: 
         arrayParamTypes: []
@@ -4401,15 +4185,6 @@ MonoBehaviour:
           value: jumping
         fsmObjectParams: []
         fsmVarParams: []
-        fsmFloatParams: []
-        fsmIntParams: []
-        fsmBoolParams: []
-        fsmVector2Params: []
-        fsmVector3Params: []
-        fsmColorParams: []
-        fsmRectParams: []
-        fsmQuaternionParams: []
-        stringParams: []
         byteData: 0000000001416e696d6174696f6e010000000001416e696d6174696f6e012000000000016a756d70696e670100016a756d70696e6701
         arrayParamSizes: 
         arrayParamTypes: []
@@ -4521,15 +4296,6 @@ MonoBehaviour:
           value: jumping
         fsmObjectParams: []
         fsmVarParams: []
-        fsmFloatParams: []
-        fsmIntParams: []
-        fsmBoolParams: []
-        fsmVector2Params: []
-        fsmVector3Params: []
-        fsmColorParams: []
-        fsmRectParams: []
-        fsmQuaternionParams: []
-        stringParams: []
         byteData: 0000000001416e696d6174696f6e010000000001416e696d6174696f6e0100016a756d70696e6701
         arrayParamSizes: 
         arrayParamTypes: []
@@ -4583,14 +4349,7 @@ MonoBehaviour:
       rectVariables: []
       quaternionVariables: []
       gameObjectVariables: []
-      objectVariables:
-      - useVariable: 1
-        name: controller
-        tooltip: 
-        showInInspector: 1
-        networkSync: 0
-        typeName: PlayMakerThirdPersonControllerProxy
-        value: {fileID: 11400022}
+      objectVariables: []
       materialVariables: []
       textureVariables: []
     description: "\nget or set the player animation. \n\nThe variable \"Animation
@@ -4607,17 +4366,6 @@ MonoBehaviour:
     StepFrame: 0
     activeStateName: 
   fsmTemplate: {fileID: 0}
---- !u!114 &11400022
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 100114}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 26929c1d46274463cbeac8130b120d51, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!137 &13700000
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 1

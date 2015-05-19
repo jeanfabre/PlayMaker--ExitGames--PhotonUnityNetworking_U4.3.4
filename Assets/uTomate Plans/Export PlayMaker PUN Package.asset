@@ -8,10 +8,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5743521803b514353beb91c4e7841ea0, type: 1}
+  m_Script: {fileID: 11500000, guid: 5743521803b514353beb91c4e7841ea0, type: 3}
   m_Name: Export PlayMaker PUN Package
-  CreatedWithActionVersion: 1.0
+  m_EditorClassIdentifier: 
+  CreatedWithActionVersion: 1.1
   includes:
+  - useExpression: 0
+    expression: 
+    propertyValue: PlayMaker PUN/**
   - useExpression: 0
     expression: 
     propertyValue: Photon Unity Networking/**
@@ -21,23 +25,15 @@ MonoBehaviour:
   excludes:
   - useExpression: 0
     expression: 
-    propertyValue: Photon Unity Networking/Demos/**
-  - useExpression: 0
-    expression: 
-    propertyValue: Photon Unity Networking/PlayMaker/Demo/**
-  - useExpression: 0
-    expression: 
     propertyValue: Photon Unity Networking/Resources/PhotonServerSettings.asset
   - useExpression: 0
     expression: 
-    propertyValue: '**/.svn/**'
-  - useExpression: 0
-    expression: 
-    propertyValue: '**/.DS_Store'
-  - useExpression: 0
-    expression: 
-    propertyValue: '**/*.meta'
+    propertyValue: Photon Unity Networking/Demos/**
   includeDependencies:
+    useExpression: 0
+    expression: 
+    propertyValue: 0
+  includeProjectSettings:
     useExpression: 0
     expression: 
     propertyValue: 0
@@ -45,7 +41,9 @@ MonoBehaviour:
     useExpression: 0
     expression: 
     propertyValue: 0
+  settingsIncludes: []
+  settingsExcludes: []
   outputFileName:
-    useExpression: 0
-    expression: 
-    propertyValue: PlayMakerPhoton.unitypackage
+    useExpression: 1
+    expression: $PackageOutputFolder + "PlayMakerPUN.unitypackage"
+    propertyValue: 

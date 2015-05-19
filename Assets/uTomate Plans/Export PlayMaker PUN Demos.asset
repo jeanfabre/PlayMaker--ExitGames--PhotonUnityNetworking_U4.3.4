@@ -8,36 +8,32 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5743521803b514353beb91c4e7841ea0, type: 1}
+  m_Script: {fileID: 11500000, guid: 5743521803b514353beb91c4e7841ea0, type: 3}
   m_Name: Export PlayMaker PUN Demos
-  CreatedWithActionVersion: 1.0
+  m_EditorClassIdentifier: 
+  CreatedWithActionVersion: 1.1
   includes:
   - useExpression: 0
     expression: 
     propertyValue: Photon Unity Networking/Demos/DemoWorker/**
   - useExpression: 0
     expression: 
-    propertyValue: Photon Unity Networking/PlayMaker/Demo/**
+    propertyValue: PlayMaker Custom Samples/Photon/SimplePlayer/**
   - useExpression: 0
     expression: 
-    propertyValue: Plugins/**
-  excludes:
+    propertyValue: PlayMaker Custom Actions/__Internal/**
   - useExpression: 0
     expression: 
-    propertyValue: Photon Unity Networking/Demos/PUNGuide_M2H/**
+    propertyValue: PlayMaker Custom Actions/String/**
   - useExpression: 0
     expression: 
-    propertyValue: '**/.svn/**'
-  - useExpression: 0
-    expression: 
-    propertyValue: '**/.DS_Store'
-  - useExpression: 0
-    expression: 
-    propertyValue: '**/*.meta'
-  - useExpression: 0
-    expression: 
-    propertyValue: Photon Unity Networking/PlayMaker/Demo/PlayMakerCustomAuth.unity
+    propertyValue: PlayMaker Custom Actions/Vector3/**
+  excludes: []
   includeDependencies:
+    useExpression: 0
+    expression: 
+    propertyValue: 0
+  includeProjectSettings:
     useExpression: 0
     expression: 
     propertyValue: 0
@@ -45,7 +41,9 @@ MonoBehaviour:
     useExpression: 0
     expression: 
     propertyValue: 0
+  settingsIncludes: []
+  settingsExcludes: []
   outputFileName:
-    useExpression: 0
-    expression: 
+    useExpression: 1
+    expression: $SampleOutputFolder + "PUNSampleWorkerDemo.unitypackage"
     propertyValue: PlayMakerPhotonSample.unitypackage
