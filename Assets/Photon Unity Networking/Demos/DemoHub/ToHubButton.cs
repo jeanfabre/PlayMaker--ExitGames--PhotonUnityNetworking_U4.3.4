@@ -6,6 +6,29 @@ public class ToHubButton : MonoBehaviour
     public Texture2D ButtonTexture;
     private Rect ButtonRect;
 
+    private static ToHubButton instance;
+
+    public static ToHubButton Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                instance = FindObjectOfType(typeof(ToHubButton)) as ToHubButton;
+            }
+
+            return instance;
+        }
+    }
+
+    void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(this.gameObject);
+        }
+    }
+
 	// Use this for initialization
 	void Start () 
     {
@@ -15,7 +38,6 @@ public class ToHubButton : MonoBehaviour
             return;
         }
 	    DontDestroyOnLoad(this.gameObject);
-
 	}
 
     public void OnGUI()

@@ -4,7 +4,7 @@
 // <copyright company="Exit Games GmbH">Photon Chat Api - Copyright (C) 2014 Exit Games GmbH</copyright>
 // ----------------------------------------------------------------------------------------------------------------------
 
-#if UNITY_3_5 || UNITY_4 || UNITY_4_1 || UNITY_4_2 || UNITY_4_3 || UNITY_4_4 || UNITY_4_5 || UNITY_4_6 || UNITY_5
+#if UNITY_3_5 || UNITY_4 || UNITY_4_1 || UNITY_4_2 || UNITY_4_3 || UNITY_4_4 || UNITY_4_5 || UNITY_4_6 || UNITY_5 || UNITY_5_0
 #define UNITY
 #endif
 
@@ -31,7 +31,6 @@ namespace ExitGames.Client.Photon.Chat
     /// </remarks>
     public class ChatClient : IPhotonPeerListener
     {
-        public string NameServerAddress = "ns.exitgamescloud.com";
         /// <summary>The address of the actual chat server assigned from NameServer. Public for read only.</summary>
         public string FrontendAddress { get; private set; }
         /// <summary>Region used to connect to. Currently all chat is done in EU. It can make sense to use only one region for the whole game.</summary>
@@ -74,8 +73,6 @@ namespace ExitGames.Client.Photon.Chat
         private int msTimestampOfLastServiceCall;
 
         private const string ChatApppName = "chat";
-        private static readonly Dictionary<ConnectionProtocol, int> ProtocolToNameServerPort = new Dictionary<ConnectionProtocol, int>() { { ConnectionProtocol.Udp, 5058 }, { ConnectionProtocol.Tcp, 4533 } }; //, { ConnectionProtocol.RHttp, 6063 } };
-
 
         public ChatClient(IChatClientListener listener)
         {
@@ -88,11 +85,24 @@ namespace ExitGames.Client.Photon.Chat
 
         public bool Connect(string appId, string appVersion, string userId, AuthenticationValues authValues)
         {
-            return this.Connect(this.NameServerAddress, ConnectionProtocol.Udp, appId, appVersion, userId, authValues);
+
+#if UNITY_WEBGL
+            var protocol = ConnectionProtocol.WebSocketSecure;
+#else
+            var protocol = ConnectionProtocol.Udp;
+#endif
+            return this.Connect(protocol, appId, appVersion, userId, authValues);
+
         }
 
-        public bool Connect(string address, ConnectionProtocol protocol, string appId, string appVersion, string userId, AuthenticationValues authValues)
-        {
+        public bool Connect(ConnectionProtocol protocol, string appId, string appVersion, string userId, AuthenticationValues authValues)
+		{
+#if UNITY_WEBGL
+	        if (protocol != ConnectionProtocol.WebSocket && protocol != ConnectionProtocol.WebSocketSecure) {
+				UnityEngine.Debug.Log("WebGL only supports WebSocket protocol. Overriding ChatClient.Connect() 'protocol' parameter");
+				protocol = ConnectionProtocol.WebSocketSecure;
+			}
+#endif
             if (!this.HasPeer)
             {
                 this.chatPeer = new ChatPeer(this, protocol);
@@ -105,34 +115,6 @@ namespace ExitGames.Client.Photon.Chat
                     this.chatPeer = new ChatPeer(this, protocol);
                 }
             }
-
-#if UNITY
-#pragma warning disable 0162    // the library variant defines if we should use PUN's SocketUdp variant (at all)
-            if (PhotonPeer.NoSocket)
-            {
-#if !UNITY_EDITOR && (UNITY_PS3 || UNITY_ANDROID)
-                UnityEngine.Debug.Log("Using class SocketUdpNativeDynamic");
-                this.chatPeer.SocketImplementation = typeof(SocketUdpNativeDynamic);
-#elif !UNITY_EDITOR && UNITY_IPHONE
-                UnityEngine.Debug.Log("Using class SocketUdpNativeStatic");
-                this.chatPeer.SocketImplementation = typeof(SocketUdpNativeStatic);
-#elif !UNITY_EDITOR && (UNITY_WINRT)
-                // this automatically uses a separate assembly-file with Win8-style Socket usage (not possible in Editor)
-#else
-                Type udpSocket = Type.GetType("ExitGames.Client.Photon.SocketUdp, Assembly-CSharp");
-                this.chatPeer.SocketImplementation = udpSocket;
-                if (udpSocket == null)
-                {
-                    UnityEngine.Debug.Log("ChatClient could not find a suitable C# socket class. The Photon3Unity3D.dll only supports native socket plugins.");
-                }
-#endif
-                if (this.chatPeer.SocketImplementation == null)
-                {
-                    UnityEngine.Debug.Log("No socket implementation set for 'NoSocket' assembly. Please contact Exit Games.");
-                }
-            }
-#pragma warning restore 0162
-#endif
 
             this.chatPeer.TimePingInterval = 3000;
             this.DisconnectedCause = ChatDisconnectCause.None;
@@ -149,14 +131,7 @@ namespace ExitGames.Client.Photon.Chat
             this.PublicChannels.Clear();
             this.PrivateChannels.Clear();
 
-            if (!address.Contains(":"))
-            {
-                int port = 0;
-                ProtocolToNameServerPort.TryGetValue(protocol, out port);
-                address = string.Format("{0}:{1}", address, port);
-            }
-
-            bool isConnecting = this.chatPeer.Connect(address, "NameServer");
+            bool isConnecting = this.chatPeer.Connect();
             if (isConnecting)
             {
                 this.State = ChatState.ConnectingToNameServer;
@@ -555,7 +530,7 @@ namespace ExitGames.Client.Photon.Chat
 
         void IPhotonPeerListener.DebugReturn(DebugLevel level, string message)
         {
-#if UNITY_EDITOR || UNITY_STANDALONE
+#if UNITY_EDITOR || UNITY_STANDALONE || UNITY_WEBGL
             if (level == DebugLevel.ERROR)
             {
                 UnityEngine.Debug.LogError(message);
@@ -622,7 +597,22 @@ namespace ExitGames.Client.Photon.Chat
             switch (statusCode)
             {
                 case StatusCode.Connect:
-                    this.chatPeer.EstablishEncryption();
+	                if (!this.chatPeer.IsProtocolSecure) {
+						UnityEngine.Debug.Log("Establishing Encryption");
+            	        this.chatPeer.EstablishEncryption();
+        	        }
+					else {
+						UnityEngine.Debug.Log("Skipping Encryption");
+                        if (!this.didAuthenticate)
+	                    {
+                    	    this.didAuthenticate = this.chatPeer.AuthenticateOnNameServer(this.AppId, this.AppVersion, this.chatRegion, this.UserId, this.CustomAuthenticationValues);
+                	        if (!this.didAuthenticate)
+            	            {
+        	                    ((IPhotonPeerListener) this).DebugReturn(DebugLevel.ERROR, "Error calling OpAuthenticate! Did not work. Check log output, CustomAuthenticationValues and if you're connected. State: " + this.State);
+    	                    }
+	                    }
+					}
+
                     if (this.State == ChatState.ConnectingToNameServer)
                     {
                         this.State = ChatState.ConnectedToNameServer;
@@ -767,7 +757,7 @@ namespace ExitGames.Client.Photon.Chat
 
         private void HandleAuthResponse(OperationResponse operationResponse)
         {
-            ((IPhotonPeerListener)this).DebugReturn(DebugLevel.INFO, operationResponse.ToStringFull() + " on: " + this.NameServerAddress);
+            ((IPhotonPeerListener)this).DebugReturn(DebugLevel.INFO, operationResponse.ToStringFull() + " on: " + this.chatPeer.NameServerAddress);
             if (operationResponse.ReturnCode == 0)
             {
                 if (this.State == ChatState.ConnectedToNameServer)
@@ -847,7 +837,7 @@ namespace ExitGames.Client.Photon.Chat
         private void ConnectToFrontEnd()
         {
             this.State = ChatState.ConnectingToFrontEnd;
-
+            ((IPhotonPeerListener)this).DebugReturn(DebugLevel.INFO, "Connecting to frontend " + this.FrontendAddress);
             this.chatPeer.Connect(this.FrontendAddress, ChatApppName);
         }
 

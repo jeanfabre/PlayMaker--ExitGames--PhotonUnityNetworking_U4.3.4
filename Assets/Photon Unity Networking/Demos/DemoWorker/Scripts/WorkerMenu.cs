@@ -209,9 +209,9 @@ public class WorkerMenu : MonoBehaviour
         Debug.Log("OnPhotonCreateRoomFailed got called. This can happen if the room exists (even if not visible). Try another room name.");
     }
 
-    public void OnPhotonJoinRoomFailed()
+    public void OnPhotonJoinRoomFailed(object[] cause)
     {
-        this.ErrorDialog = "Error: Can't join room (full or unknown room name).";
+        this.ErrorDialog = "Error: Can't join room (full or unknown room name). " + cause[1];
         Debug.Log("OnPhotonJoinRoomFailed got called. This can happen if the room is not existing or full or closed.");
     }
     public void OnPhotonRandomJoinFailed()

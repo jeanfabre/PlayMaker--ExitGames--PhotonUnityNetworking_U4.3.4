@@ -21,6 +21,10 @@ public class HubGui : MonoBehaviour
 
     void Start()
     {
+        if (PhotonNetwork.connected || PhotonNetwork.connecting)
+        {
+            PhotonNetwork.Disconnect();
+        }
         m_Headline = new GUIStyle(this.Skin.label);
         m_Headline.padding = new RectOffset(3, 0, 0, 0);
     }

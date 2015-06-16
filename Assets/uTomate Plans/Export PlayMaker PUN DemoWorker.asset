@@ -28,6 +28,9 @@ MonoBehaviour:
   - useExpression: 0
     expression: 
     propertyValue: PlayMaker Custom Actions/Vector3/**
+  - useExpression: 0
+    expression: 
+    propertyValue: PlayMaker Utils/**
   excludes: []
   includeDependencies:
     useExpression: 0

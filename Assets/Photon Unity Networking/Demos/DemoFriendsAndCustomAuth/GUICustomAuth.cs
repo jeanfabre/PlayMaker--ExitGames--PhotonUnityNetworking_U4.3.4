@@ -71,7 +71,8 @@ public class GUICustomAuth : MonoBehaviour
     {
         RootOf3dButtons.SetActive(false);
 
-        PhotonNetwork.AuthValues = null; // null by default but maybe set in a previous session.
+        PhotonNetwork.AuthValues = new AuthenticationValues() {UserId = PhotonNetwork.playerName }; // null by default but maybe set in a previous session.
+        PhotonNetwork.playerName = PhotonNetwork.playerName + "Nick";
         PhotonNetwork.ConnectUsingSettings("1.0");
 
         // PhotonNetwork.playerName gets set in GUIFriendFinding
@@ -157,8 +158,17 @@ public class GUICustomAuth : MonoBehaviour
 
                 if (GUILayout.Button("Authenticate"))
                 {
+                    // you need some auth values (before we connect):
                     PhotonNetwork.AuthValues = new AuthenticationValues();
-                    PhotonNetwork.AuthValues.SetAuthParameters(this.authName, this.authToken);
+                    
+                    // important: select authentication type (how / where the auth is verified)
+                    PhotonNetwork.AuthValues.AuthType = CustomAuthenticationType.Custom;    
+
+                    // the demo authentication-service expects values for "username" and "token":
+                    PhotonNetwork.AuthValues.AddAuthParameter("username", this.authName);
+                    PhotonNetwork.AuthValues.AddAuthParameter("token", this.authToken);
+
+                    // PUN uses the AuthValues in the connect workflow:
                     PhotonNetwork.ConnectUsingSettings("1.0");
                 }
 
