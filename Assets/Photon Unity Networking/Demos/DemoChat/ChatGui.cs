@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using ExitGames.Client.Photon;
 using ExitGames.Client.Photon.Chat;
 using UnityEngine;
+using AuthenticationValues = ExitGames.Client.Photon.Chat.AuthenticationValues;
 
 
 /// <summary>
@@ -66,7 +68,7 @@ public class ChatGui : MonoBehaviour, IChatClientListener
         }
 
         chatClient = new ChatClient(this);
-        chatClient.Connect(ChatAppId, "1.0", this.UserName, null);
+        chatClient.Connect(ChatAppId, "1.0", new ExitGames.Client.Photon.Chat.AuthenticationValues(this.UserName));
 
         if (this.AlignBottom)
         {
@@ -303,7 +305,12 @@ public class ChatGui : MonoBehaviour, IChatClientListener
         this.chatClient.AddFriends(new string[] {"tobi", "ilya"});          // Add some users to the server-list to get their status updates
         this.chatClient.SetOnlineStatus(ChatUserStatus.Online);             // You can set your online state (without a mesage).
     }
-    
+
+    public void DebugReturn(DebugLevel level, string message)
+    {
+        Debug.Log(message);
+    }
+
     public void OnDisconnected()
     {
     }

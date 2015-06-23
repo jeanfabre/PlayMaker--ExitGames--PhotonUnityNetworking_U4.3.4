@@ -188,7 +188,7 @@ public enum PhotonNetworkingMessage
     /// </summary>
     /// <remarks>
     /// This method is commonly used to instantiate player characters.
-    /// If a match has to be started "actively", you can instead call an [RPC](@ref PhotonView.RPC) triggered by a user's button-press or a timer.
+    /// If a match has to be started "actively", you can instead call an [PunRPC](@ref PhotonView.RPC) triggered by a user's button-press or a timer.
     ///
     /// When this is called, you can usually already access the existing players in the room via PhotonNetwork.playerList.
     /// Also, all custom properties should be already available as Room.customProperties. Check Room.playerCount to find out if

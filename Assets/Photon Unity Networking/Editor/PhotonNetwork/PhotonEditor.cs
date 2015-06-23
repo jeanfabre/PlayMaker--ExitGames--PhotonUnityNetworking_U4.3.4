@@ -108,7 +108,7 @@ public class PhotonEditor : EditorWindow
     protected static string UrlCloudDashboard = "https://www.exitgames.com/Dashboard?email=";
 
 
-    public enum PhotonSetupStates
+    private enum PhotonSetupStates
     {
         MainUi,
 
@@ -119,9 +119,9 @@ public class PhotonEditor : EditorWindow
         GoEditPhotonServerSettings
     }
 
-    public bool isSetupWizard = false;
+    private bool isSetupWizard = false;
 
-    public PhotonSetupStates photonSetupState = PhotonSetupStates.RegisterForPhotonCloud;
+    private PhotonSetupStates photonSetupState = PhotonSetupStates.RegisterForPhotonCloud;
 
 
     private bool minimumInput = false;
@@ -204,6 +204,7 @@ public class PhotonEditor : EditorWindow
             #endif
         }
     }
+
 
     // called in editor, opens wizard for initial setup, keeps scene PhotonViews up to date and closes connections when compiling (to avoid issues)
     private static void EditorUpdate()
@@ -629,13 +630,21 @@ public class PhotonEditor : EditorWindow
 
         var types = GetAllSubTypesInScripts(typeof(MonoBehaviour));
 
+        int countOldRpcs = 0;
         foreach (var mono in types)
         {
             MethodInfo[] methods = mono.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
             foreach (MethodInfo method in methods)
             {
-                if (method.IsDefined(typeof (UnityEngine.RPC), false))
+                bool isOldRpc = false;
+                if (method.IsDefined(typeof (RPC), false))
+                {
+                    countOldRpcs++;
+                    isOldRpc = true;
+                }
+                
+                if (isOldRpc || method.IsDefined(typeof(PunRPC), false))
                 {
                     currentRpcs.Add(method.Name);
 
@@ -675,6 +684,15 @@ public class PhotonEditor : EditorWindow
             additionalRpcs.Sort();
             PhotonNetwork.PhotonServerSettings.RpcList.AddRange(additionalRpcs);
             EditorUtility.SetDirty(PhotonNetwork.PhotonServerSettings);
+        }
+
+        if (countOldRpcs > 0)
+        {
+            bool convertRPCs = EditorUtility.DisplayDialog("RPC Attribute Outdated", "Some code uses the obsolete RPC attribute. PUN now requires the PunRPC attribute to mark remote-callable methods.\nThe Editor can search and replace that code which will modify your source.", "Replace. I got a backup.", "Not now.");
+            if (convertRPCs)
+            {
+                PhotonConverter.ConvertRpcAttribute("");
+            }
         }
     }
 

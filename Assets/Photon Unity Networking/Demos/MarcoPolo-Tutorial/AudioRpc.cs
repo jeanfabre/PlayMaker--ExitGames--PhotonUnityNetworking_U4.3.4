@@ -13,7 +13,7 @@ public class AudioRpc : Photon.MonoBehaviour
         m_Source = GetComponent<AudioSource>();
     }
 
-    [RPC]
+    [PunRPC]
     void Marco()
     {
         if( !this.enabled )
@@ -27,7 +27,7 @@ public class AudioRpc : Photon.MonoBehaviour
         m_Source.Play();
     }
 
-    [RPC]
+    [PunRPC]
     void Polo()
     {
         if( !this.enabled )

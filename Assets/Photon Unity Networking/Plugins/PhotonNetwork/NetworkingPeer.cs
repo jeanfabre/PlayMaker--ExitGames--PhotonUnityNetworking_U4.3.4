@@ -12,6 +12,7 @@ using System.Reflection;
 using UnityEngine;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
 
+
 /// <summary>
 /// Implements Photon LoadBalancing used in PUN.
 /// This class is used internally by PhotonNetwork and not intended as public API.
@@ -2182,7 +2183,7 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
 
             Type type = monob.GetType();
 
-            // Get [RPC] methods from cache
+            // Get [PunRPC] methods from cache
             List<MethodInfo> cachedRPCMethods = null;
             if (this.monoRPCMethodsCache.ContainsKey(type))
             {
@@ -2191,7 +2192,7 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
 
             if (cachedRPCMethods == null)
             {
-                List<MethodInfo> entries = SupportClass.GetMethods(type, typeof(RPC));
+                List<MethodInfo> entries = SupportClass.GetMethods(type, typeof(PunRPC));
 
                 this.monoRPCMethodsCache[type] = entries;
                 cachedRPCMethods = entries;
@@ -2284,7 +2285,7 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
             {
                 if (foundMethods == 0)
                 {
-                    Debug.LogError("PhotonView with ID " + netViewID + " has no method \"" + inMethodName + "\" marked with the [RPC](C#) or @RPC(JS) property! Args: " + argsString);
+                    Debug.LogError("PhotonView with ID " + netViewID + " has no method \"" + inMethodName + "\" marked with the [PunRPC](C#) or @PunRPC(JS) property! Args: " + argsString);
                 }
                 else
                 {

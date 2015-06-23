@@ -59,7 +59,7 @@ public class JumpAndRunMovement : MonoBehaviour
         }
     }
 
-    [RPC]
+    [PunRPC]
     void DoJump()
     {
         m_Animator.SetTrigger( "IsJumping" );

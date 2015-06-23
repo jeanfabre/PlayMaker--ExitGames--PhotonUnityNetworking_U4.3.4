@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class RandomMatchmaker : Photon.MonoBehaviour
+public class RandomMatchmaker : Photon.PunBehaviour
 {
     private PhotonView myPhotonView;
 
@@ -10,25 +10,25 @@ public class RandomMatchmaker : Photon.MonoBehaviour
         PhotonNetwork.ConnectUsingSettings("0.1");
     }
 
-    void OnJoinedLobby()
+    public override void OnJoinedLobby()
     {
         Debug.Log("JoinRandom");
         PhotonNetwork.JoinRandomRoom();
     }
 
-    void OnPhotonRandomJoinFailed()
+    public void OnPhotonRandomJoinFailed()
     {
         PhotonNetwork.CreateRoom(null);
     }
 
-    void OnJoinedRoom()
+    public override void OnJoinedRoom()
     {
         GameObject monster = PhotonNetwork.Instantiate("monsterprefab", Vector3.zero, Quaternion.identity, 0);
         monster.GetComponent<myThirdPersonController>().isControllable = true;
         myPhotonView = monster.GetComponent<PhotonView>();
     }
 
-    void OnGUI()
+    public void OnGUI()
     {
         GUILayout.Label(PhotonNetwork.connectionStateDetailed.ToString());
 

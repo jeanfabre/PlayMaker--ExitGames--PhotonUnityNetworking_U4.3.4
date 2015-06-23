@@ -24,7 +24,7 @@ public class OnClickRequestOwnership : Photon.MonoBehaviour
         }
     }
 
-    [RPC]
+    [PunRPC]
     public void ColorRpc( Vector3 col )
     {
         Color color = new Color( col.x, col.y, col.z );

@@ -211,7 +211,7 @@ public interface IPunCallbacks
     /// </summary>
     /// <remarks>
     /// This method is commonly used to instantiate player characters.
-    /// If a match has to be started "actively", you can call an [RPC](@ref PhotonView.RPC) triggered by a user's button-press or a timer.
+    /// If a match has to be started "actively", you can call an [PunRPC](@ref PhotonView.RPC) triggered by a user's button-press or a timer.
     ///
     /// When this is called, you can usually already access the existing players in the room via PhotonNetwork.playerList.
     /// Also, all custom properties should be already available as Room.customProperties. Check Room.playerCount to find out if
@@ -563,7 +563,7 @@ namespace Photon
         /// </summary>
         /// <remarks>
         /// This method is commonly used to instantiate player characters.
-        /// If a match has to be started "actively", you can call an [RPC](@ref PhotonView.RPC) triggered by a user's button-press or a timer.
+        /// If a match has to be started "actively", you can call an [PunRPC](@ref PhotonView.RPC) triggered by a user's button-press or a timer.
         ///
         /// When this is called, you can usually already access the existing players in the room via PhotonNetwork.playerList.
         /// Also, all custom properties should be already available as Room.customProperties. Check Room.playerCount to find out if
@@ -1248,6 +1248,18 @@ public class PhotonStream
         }
     }
 }
+
+
+#if UNITY_5_0 || !UNITY_5
+/// <summary>Empty implementation of the upcoming HelpURL of Unity 5.1. This one is only for compatibility of attributes.</summary>
+/// <remarks>http://feedback.unity3d.com/suggestions/override-component-documentation-slash-help-link</remarks>
+public class HelpURL : Attribute
+{
+    public HelpURL(string url)
+    {
+    }
+}
+#endif
 
 
 /// <summary>Provides easy access to most common WebRpc-Response values.</summary>

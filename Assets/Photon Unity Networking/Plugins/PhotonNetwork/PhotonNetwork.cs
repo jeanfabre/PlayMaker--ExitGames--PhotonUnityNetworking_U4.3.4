@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="PhotonNetwork.cs" company="Exit Games GmbH">
 //   Part of: Photon Unity Networking
 // </copyright>
@@ -27,7 +27,7 @@ using System.IO;
 public static class PhotonNetwork
 {
     /// <summary>Version number of PUN. Also used in GameVersion to separate client version from each other.</summary>
-    public const string versionPUN = "1.55";
+    public const string versionPUN = "1.57";
 
     public static string gameVersion
     {
@@ -1344,6 +1344,35 @@ public static class PhotonNetwork
 
         bool couldConnect = PhotonNetwork.networkingPeer.ConnectToNameServer();
         return couldConnect;
+    }
+
+
+    /// <summary>
+    /// Connects to the Photon Cloud region of choice.
+    /// </summary>
+    public static bool ConnectToRegion(CloudRegionCode region, string gameVersion)
+    {
+        if (PhotonServerSettings == null)
+        {
+            Debug.LogError("Can't connect: ServerSettings asset must be in any 'Resources' folder as: " + PhotonNetwork.serverSettingsAssetFile);
+            return false;
+        }
+
+        if (PhotonServerSettings.HostType == ServerSettings.HostingOption.OfflineMode)
+        {
+            return PhotonNetwork.ConnectUsingSettings(gameVersion);
+        }
+
+        networkingPeer.IsInitialConnect = true;
+        networkingPeer.SetApp(PhotonServerSettings.AppID, gameVersion);
+
+        if (region != CloudRegionCode.none)
+        {
+            Debug.Log("ConnectToRegion: " + region);
+            return networkingPeer.ConnectToRegionMaster(region);
+        }
+
+        return false;
     }
 
     /// <summary>Overwrites the region that is used for ConnectToBestCloudServer(string gameVersion).</summary>
