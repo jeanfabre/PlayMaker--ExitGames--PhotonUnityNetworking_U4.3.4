@@ -7,9 +7,11 @@ using AuthenticationValues = ExitGames.Client.Photon.Chat.AuthenticationValues;
 
 
 /// <summary>
-/// This simple Chat Server Gui uses a global chat (in lobby) and a room chat (in room).
+/// Simple Chat Server Gui to be put on a separate GameObject. Provides a global chat (in lobby) and a room chat (in room).
 /// </summary>
 /// <remarks>
+/// This script flags it's GameObject with DontDestroyOnLoad(). Make sure this is OK in your case.
+/// 
 /// The Chat Server API in ChatClient basically lets you create any number of channels. 
 /// You just have to name them. Example: "gc" for Global Channel or for rooms: "rc"+RoomName.GetHashCode()
 /// 
@@ -57,9 +59,37 @@ public class ChatGui : MonoBehaviour, IChatClientListener
     private static string WelcomeText = "Welcome to chat.\\help lists commands.";
     private static string HelpText = "\n\\subscribe <list of channelnames> subscribes channels.\n\\unsubscribe <list of channelnames> leaves channels.\n\\msg <username> <message> send private message to user.\n\\clear clears the current chat tab. private chats get closed.\n\\help gets this help message.";
 
+
+    private static ChatGui instance;
+    public static ChatGui Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                instance = FindObjectOfType<ChatGui>();
+            }
+            return instance;
+        }
+    }
+
+    public void Awake()
+    {
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(this.gameObject);
+        }
+        else if (instance != this)
+        {
+            Debug.LogWarning("Destroying duplicate instance of "+this.gameObject+". ChatGui applies DontDestroyOnLoad() to this GameObject.");
+            Destroy(this.gameObject);
+        }
+    }
+
+
     public void Start()
     {
-        DontDestroyOnLoad(this.gameObject);
         Application.runInBackground = true; // this must run in background or it will drop connection if not focussed.
 
         if (string.IsNullOrEmpty(this.UserName))
@@ -85,12 +115,24 @@ public class ChatGui : MonoBehaviour, IChatClientListener
         Debug.Log(this.UserName);
     }
 
-    /// <summary>To avoid that the Editor becomes unresponsive, disconnect all Photon connections in OnApplicationQuit.</summary>
+    /// <summary>To avoid the Editor becoming unresponsive, disconnect all Photon connections in OnApplicationQuit.</summary>
     public void OnApplicationQuit()
     {
         if (this.chatClient != null)
         {
             this.chatClient.Disconnect();
+        }
+    }
+
+    /// <summary>To avoid the Editor becoming unresponsive, disconnect the Chat connection.</summary>
+    public void OnDestroy()
+    {
+        if (Instance != null && Instance == this)
+        {
+            if (chatClient != null)
+            {
+                chatClient.Disconnect();
+            }
         }
     }
 
@@ -134,7 +176,7 @@ public class ChatGui : MonoBehaviour, IChatClientListener
 
         GUILayout.FlexibleSpace();
 
-        if (this.chatClient.State != ChatState.ConnectedToFrontEnd)
+        if (this.chatClient == null || this.chatClient.State != ChatState.ConnectedToFrontEnd)
         {
             GUILayout.Label("Not in chat yet.");
         }

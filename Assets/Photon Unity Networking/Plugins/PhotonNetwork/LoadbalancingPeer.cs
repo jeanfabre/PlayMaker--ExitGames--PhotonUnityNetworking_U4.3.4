@@ -26,7 +26,7 @@ namespace ExitGames.Client.Photon
     internal class LoadbalancingPeer : PhotonPeer
     {
 
-        virtual internal bool IsProtocolSecure { get { return this.UsedProtocol == ConnectionProtocol.WebSocketSecure; } }
+        internal bool IsProtocolSecure { get { return this.UsedProtocol == ConnectionProtocol.WebSocketSecure; } }
 
         private readonly Dictionary<byte, object> opParameters = new Dictionary<byte, object>();    // used in OpRaiseEvent() (avoids lots of new Dictionary() calls)
 
@@ -373,10 +373,11 @@ namespace ExitGames.Client.Photon
         /// </remarks>
         /// <param name="appId">Your application's name or ID to authenticate. This is assigned by Photon Cloud (webpage).</param>
         /// <param name="appVersion">The client's version (clients with differing client appVersions are separated and players don't meet).</param>
-        /// <param name="authValues"></param>
+        /// <param name="authValues">Contains all values relevant for authentication (with third-party external Custom Authentication optionally).</param>
         /// <param name="regionCode">When authenticating for a specific region, a NameServer will forward you to that region's MasterServer.</param>
+        /// <param name="getLobbyStatistics">Set to true on Master Server to receive "Lobby Statistics" events.</param>
         /// <returns>If the operation could be sent (has to be connected).</returns>
-        public virtual bool OpAuthenticate(string appId, string appVersion, AuthenticationValues authValues, string regionCode)
+        public virtual bool OpAuthenticate(string appId, string appVersion, AuthenticationValues authValues, string regionCode, bool getLobbyStatistics)
         {
             if (this.DebugOut >= DebugLevel.INFO)
             {
@@ -384,6 +385,12 @@ namespace ExitGames.Client.Photon
             }
 
             Dictionary<byte, object> opParameters = new Dictionary<byte, object>();
+            if (getLobbyStatistics)
+            {
+                // must be sent in operation, even if a Token is available
+                opParameters[ParameterCode.LobbyStats] = true;
+            }
+
             if (authValues != null && authValues.Token != null)
             {
                 opParameters[ParameterCode.Secret] = authValues.Token;
@@ -708,8 +715,10 @@ namespace ExitGames.Client.Photon
 
         /// <summary>(226) Event with stats about this application (players, rooms, etc)</summary>
         public const byte AppStats = 226;
+
         /// <summary>(224) This event provides a list of lobbies with their player and game counts.</summary>
-        public const byte TypedLobbyStats = 224;
+        public const byte LobbyStats = 224;
+
         /// <summary>(210) Internally used in case of hosting by Azure</summary>
         [Obsolete("TCP routing was removed after becoming obsolete.")]
         public const byte AzureNodeInfo = 210;
@@ -1130,12 +1139,12 @@ public enum CustomAuthenticationType : byte
 /// Container for user authentication in Photon. Set AuthValues before you connect - all else is handled.
 /// </summary>
 /// <remarks>
-/// On Photon, user authentication is optional but can be useful in many cases. 
+/// On Photon, user authentication is optional but can be useful in many cases.
 /// If you want to FindFriends, a unique ID per user is very practical.
-/// 
+///
 /// There are basically three options for user authentification: None at all, the client sets some UserId
 /// or you can use some account web-service to authenticate a user (and set the UserId server-side).
-/// 
+///
 /// Custom Authentication lets you verify end-users by some kind of login or token. It sends those
 /// values to Photon which will verify them before granting access or disconnecting the client.
 ///

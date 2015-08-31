@@ -38,6 +38,7 @@ public class PhotonPlayer
     private string nameField = "";
 
     /// <summary>Nickname of this player.</summary>
+    /// <remarks>Set the PhotonNetwork.playerName to make the name synchronized in a room.</remarks>
     public string name {
         get
         {

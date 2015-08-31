@@ -70,6 +70,11 @@ public class PunWizardText
     public string PUNNameReplaceLabel = "PUN replaces RPC names with numbers by using the RPC-list. All clients must use the same list for that.\n\nClearing it most likely makes your client incompatible with previous versions! Change your game version or make sure the RPC-list matches other clients.";
     public string RPCListCleared = "Clear RPC-list";
     public string ServerSettingsCleanedWarning = "Cleared the PhotonServerSettings.RpcList! This makes new builds incompatible with older ones. Better change game version in PhotonNetwork.ConnectUsingSettings().";
+    public string RpcFoundMessage = "Some code uses the obsolete RPC attribute. PUN now requires the PunRPC attribute to mark remote-callable methods.\nThe Editor can search and replace that code which will modify your source.";
+    public string RpcFoundDialogTitle = "RPC Attribute Outdated";
+    public string RpcReplaceButton = "Replace. I got a backup.";
+    public string RpcSkipReplace = "Not now.";
+    public string WizardMainWindowInfo = "This window should help you find important settings for PUN, as well as documentation.";
 }
 
 
@@ -91,21 +96,21 @@ public class PhotonEditor : EditorWindow
 
     protected static string DocumentationLocation = "Assets/Photon Unity Networking/PhotonNetwork-Documentation.pdf";
 
-    protected static string UrlFreeLicense = "https://www.exitgames.com/en/OnPremise/Dashboard";
+    protected static string UrlFreeLicense = "https://www.photonengine.com/en/OnPremise/Dashboard";
 
-    protected static string UrlDevNet = "http://doc.exitgames.com/en/pun/current";
+    protected static string UrlDevNet = "http://doc.photonengine.com/en/pun/current";
 
     protected static string UrlForum = "http://forum.exitgames.com";
 
-    protected static string UrlCompare = "http://doc.exitgames.com/en/realtime/current/getting-started/onpremise-or-saas";
+    protected static string UrlCompare = "http://doc.photonengine.com/en/realtime/current/getting-started/onpremise-or-saas";
 
-    protected static string UrlHowToSetup = "http://doc.exitgames.com/en/onpremise/current/getting-started/photon-server-in-5min";
+    protected static string UrlHowToSetup = "http://doc.photonengine.com/en/onpremise/current/getting-started/photon-server-in-5min";
 
-    protected static string UrlAppIDExplained = "http://doc.exitgames.com/en/realtime/current/getting-started/obtain-your-app-id";
+    protected static string UrlAppIDExplained = "http://doc.photonengine.com/en/realtime/current/getting-started/obtain-your-app-id";
 
-    protected static string UrlAccountPage = "https://www.exitgames.com/Account/SignIn?email="; // opened in browser
+    protected static string UrlAccountPage = "https://www.photonengine.com/Account/SignIn?email="; // opened in browser
 
-    protected static string UrlCloudDashboard = "https://www.exitgames.com/Dashboard?email=";
+    protected static string UrlCloudDashboard = "https://www.photonengine.com/Dashboard?email=";
 
 
     private enum PhotonSetupStates
@@ -257,8 +262,8 @@ public class PhotonEditor : EditorWindow
             EditorUtility.DisplayDialog(CurrentLang.SetupWizardWarningTitle, CurrentLang.SetupWizardWarningMessage, CurrentLang.OkButton);
         }
     }
-    
-    
+
+
     #region GUI and Wizard
 
     // Window Update() callback. On-demand, when Window is open
@@ -415,7 +420,7 @@ public class PhotonEditor : EditorWindow
                 GUILayout.Label(CurrentLang.AppliedToSettingsInfo);
             }
 
-            
+
             // setup-complete info
             GUILayout.Space(15);
             GUILayout.Label(CurrentLang.SetupCompleteInfo);
@@ -457,9 +462,9 @@ public class PhotonEditor : EditorWindow
 
         // title
         UiTitleBox(CurrentLang.PUNWizardLabel, BackgroundImage);
-        
+
         // wizard info text
-        GUILayout.Label("This window should help you find important settings for PUN, as well as documentation.");
+        GUILayout.Label(CurrentLang.WizardMainWindowInfo);
         GUILayout.Space(15);
 
 
@@ -562,7 +567,7 @@ public class PhotonEditor : EditorWindow
         {
             PhotonNetwork.PhotonServerSettings.HostType = ServerSettings.HostingOption.PhotonCloud;
             PhotonEditor.SaveSettings();
-            
+
             Debug.LogWarning(client.Message);
             if (client.Message.Contains("registered"))
             {
@@ -638,12 +643,15 @@ public class PhotonEditor : EditorWindow
             foreach (MethodInfo method in methods)
             {
                 bool isOldRpc = false;
+                #pragma warning disable 618
+                // we let the Editor check for outdated RPC attributes in code. that should not cause a compile warning
                 if (method.IsDefined(typeof (RPC), false))
                 {
                     countOldRpcs++;
                     isOldRpc = true;
                 }
-                
+                #pragma warning restore 618
+
                 if (isOldRpc || method.IsDefined(typeof(PunRPC), false))
                 {
                     currentRpcs.Add(method.Name);
@@ -688,7 +696,7 @@ public class PhotonEditor : EditorWindow
 
         if (countOldRpcs > 0)
         {
-            bool convertRPCs = EditorUtility.DisplayDialog("RPC Attribute Outdated", "Some code uses the obsolete RPC attribute. PUN now requires the PunRPC attribute to mark remote-callable methods.\nThe Editor can search and replace that code which will modify your source.", "Replace. I got a backup.", "Not now.");
+            bool convertRPCs = EditorUtility.DisplayDialog(CurrentLang.RpcFoundDialogTitle, CurrentLang.RpcFoundMessage, CurrentLang.RpcReplaceButton, CurrentLang.RpcSkipReplace);
             if (convertRPCs)
             {
                 PhotonConverter.ConvertRpcAttribute("");

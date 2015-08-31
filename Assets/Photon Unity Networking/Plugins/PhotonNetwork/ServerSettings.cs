@@ -28,7 +28,8 @@ public class Region
 
         return code;
     }
-    public static CloudRegionFlag ParseFlag(string codeAsString)
+
+    internal static CloudRegionFlag ParseFlag(string codeAsString)
     {
         codeAsString = codeAsString.ToLower();
 
@@ -65,7 +66,9 @@ public class ServerSettings : ScriptableObject
     public string AppID = "";
     public CloudRegionCode PreferredRegion;
     public CloudRegionFlag EnabledRegions = (CloudRegionFlag)(-1);
-    
+
+    public bool JoinLobby;
+    public bool EnableLobbyStatistics;
 
     public List<string> RpcList = new List<string>();   // set by scripts and or via Inspector
 

@@ -331,11 +331,11 @@ public interface IPunCallbacks
     /// Called by PUN when the response to a WebRPC is available. See PhotonNetwork.WebRPC.
     /// </summary>
     /// <remarks>
-    /// Important: The response.ReturnCode is 0 if Photon was able to reach your web-service.
-    /// The content of the response is what your web-service sent. You can create a WebResponse instance from it.
-    /// Example: WebRpcResponse webResponse = new WebRpcResponse(operationResponse);
+    /// Important: The response.ReturnCode is 0 if Photon was able to reach your web-service.<br/>
+    /// The content of the response is what your web-service sent. You can create a WebRpcResponse from it.<br/>
+    /// Example: WebRpcResponse webResponse = new WebRpcResponse(operationResponse);<br/>
     ///
-    /// Please note: Class OperationResponse is in a namespace which needs to be "used":
+    /// Please note: Class OperationResponse is in a namespace which needs to be "used":<br/>
     /// using ExitGames.Client.Photon;  // includes OperationResponse (and other classes)
     ///
     /// The OperationResponse.ReturnCode by Photon is:<pre>
@@ -357,6 +357,16 @@ public interface IPunCallbacks
     /// </remarks>
     /// <param name="viewAndPlayer">The PhotonView is viewAndPlayer[0] and the requesting player is viewAndPlayer[1].</param>
     void OnOwnershipRequest(object[] viewAndPlayer);
+
+    /// <summary>
+    /// Called when the Master Server sent an update for the Lobby Statistics, updating PhotonNetwork.LobbyStatistics.
+    /// </summary>
+    /// <remarks>
+    /// This callback has two preconditions:
+    /// EnableLobbyStatistics must be set to true, before this client connects.
+    /// And the client has to be connected to the Master Server, which is providing the info about lobbies.
+    /// </remarks>
+    void OnLobbyStatisticsUpdate();
 }
 
 
@@ -733,6 +743,18 @@ namespace Photon
         public virtual void OnOwnershipRequest(object[] viewAndPlayer)
         {
         }
+
+        /// <summary>
+        /// Called when the Master Server sent an update for the Lobby Statistics, updating PhotonNetwork.LobbyStatistics.
+        /// </summary>
+        /// <remarks>
+        /// This callback has two preconditions:
+        /// EnableLobbyStatistics must be set to true, before this client connects.
+        /// And the client has to be connected to the Master Server, which is providing the info about lobbies.
+        /// </remarks>
+        public virtual void OnLobbyStatisticsUpdate()
+        {
+        }
     }
 }
 
@@ -809,7 +831,11 @@ public class RoomOptions
     public byte maxPlayers;
 
     /// <summary>Time To Live (TTL) for an 'actor' in a room. If a client disconnects, this actor is inactive first and removed after this timeout. In milliseconds.</summary>
-    //public int PlayerTtl;
+    // public int PlayerTtl;
+
+    /// <summary>Time To Live (TTL) for a room when the last player leaves. Keeps room in memory for case a player re-joins soon. In milliseconds.</summary>
+    // public int EmptyRoomTtl;
+
 
     /// <summary>Time To Live (TTL) for a room when the last player leaves. Keeps room in memory for case a player re-joins soon. In milliseconds.</summary>
     //public int EmptyRoomTtl;
@@ -852,10 +878,10 @@ public class RoomOptions
     /// Tells the server to skip room events for joining and leaving players.
     /// </summary>
     /// <remarks>
-    /// Using this makes the client unaware of the other players in a room. 
+    /// Using this makes the client unaware of the other players in a room.
     /// That can save some traffic if you have some server logic that updates players
     /// but it can also limit the client's usability.
-    /// 
+    ///
     /// PUN will break if you use this, so it's not settable.
     /// </remarks>
     public bool suppressRoomEvents { get { return this.suppressRoomEventsField; } /*set { this.suppressRoomEventsField = value; }*/ }
@@ -899,6 +925,19 @@ public class TypedLobby
     public override string ToString()
     {
         return string.Format("Lobby '{0}'[{1}]", this.Name, this.Type);
+    }
+}
+
+
+/// <summary>Used in the PhotonNetwork.LobbyStatistics list of lobbies used by your application. Contains room- and player-count for each.</summary>
+public class TypedLobbyInfo : TypedLobby
+{
+    public int PlayerCount;
+    public int RoomCount;
+
+    public override string ToString()
+    {
+        return string.Format("LobbyInfo '{0}'[{1}] rooms: {2} players: {3}", this.Name, this.Type, this.RoomCount, this.PlayerCount);
     }
 }
 
@@ -1262,19 +1301,29 @@ public class HelpURL : Attribute
 #endif
 
 
-/// <summary>Provides easy access to most common WebRpc-Response values.</summary>
+/// <summary>Reads an operation response of a WebRpc and provides convenient access to most common values.</summary>
 /// <remarks>
 /// See method PhotonNetwork.WebRpc.<br/>
-/// Instantiate as new WebRpcResponse(operationResponse) for operationResponse.OperationCode == OperationCode.WebRpc.
+/// Create a WebRpcResponse to access common result values.<br/>
+/// The operationResponse.OperationCode should be: OperationCode.WebRpc.<br/>
 /// </remarks>
 public class WebRpcResponse
 {
+    /// <summary>Name of the WebRpc that was called.</summary>
     public string Name { get; private set; }
-    /// <summary>-1 tells you: Got not ReturnCode from WebRpc service.</summary>
+    /// <summary>ReturnCode of the WebService that answered the WebRpc.</summary>
+    /// <remarks>
+    /// 0 is commonly used to signal success.<br/>
+    /// -1 tells you: Got no ReturnCode from WebRpc service.<br/>
+    /// Other ReturnCodes are defined by the individual WebRpc and service.
+    /// </remarks>
     public int ReturnCode { get; private set; }
+    /// <summary>Might be empty or null.</summary>
     public string DebugMessage { get; private set; }
+    /// <summary>Other key/values returned by the webservice that answered the WebRpc.</summary>
     public Dictionary<string, object> Parameters { get; private set; }
 
+    /// <summary>An OperationResponse for a WebRpc is needed to read it's values.</summary>
     public WebRpcResponse(OperationResponse response)
     {
         object value;
@@ -1291,6 +1340,8 @@ public class WebRpcResponse
         this.DebugMessage = value as string;
     }
 
+    /// <summary>Turns the response into an easier to read string.</summary>
+    /// <returns>String resembling the result.</returns>
     public string ToStringFull()
     {
         return string.Format("{0}={2}: {1} \"{3}\"", Name, SupportClass.DictionaryToString(Parameters), ReturnCode, DebugMessage);

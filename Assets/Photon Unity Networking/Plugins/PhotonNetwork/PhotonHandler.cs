@@ -28,9 +28,10 @@ internal class PhotonHandler : Photon.MonoBehaviour, IPhotonPeerListener
     private int nextSendTickCountOnSerialize = 0;
 
     private static bool sendThreadShouldRun;
-    public static bool AppQuits;
+    
+    protected internal static bool AppQuits;
 
-    public static Type PingImplementation = null;
+    protected internal static Type PingImplementation = null;
 
     protected void Awake()
     {
@@ -48,12 +49,20 @@ internal class PhotonHandler : Photon.MonoBehaviour, IPhotonPeerListener
         PhotonHandler.StartFallbackSendAckThread();
     }
 
-    /// <summary>Called by Unity when the application is closed. Tries to disconnect.</summary>
+    /// <summary>Called by Unity when the application is closed. Disconnects.</summary>
     protected void OnApplicationQuit()
     {
         PhotonHandler.AppQuits = true;
         PhotonHandler.StopFallbackSendAckThread();
         PhotonNetwork.Disconnect();
+    }
+
+    /// <summary>Called by Unity when the play mode ends. Used to cleanup.</summary>
+    protected void OnDestroy()
+    {
+        //Debug.Log("OnDestroy on PhotonHandler.");
+        PhotonHandler.StopFallbackSendAckThread();
+        //PhotonNetwork.Disconnect();
     }
 
     protected void Update()

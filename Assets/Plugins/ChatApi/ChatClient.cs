@@ -86,7 +86,7 @@ namespace ExitGames.Client.Photon.Chat
 
 
         private readonly IChatClientListener listener = null;
-        private ChatPeer chatPeer = null;
+        internal ChatPeer chatPeer = null;
 
         private bool didAuthenticate;
         private int msDeltaForServiceCalls = 50;
@@ -118,16 +118,28 @@ namespace ExitGames.Client.Photon.Chat
             this.PrivateChannels = new Dictionary<string, ChatChannel>();
         }
 
+        /// <summary>
+        /// Connects this client to the Photon Chat Cloud service, which will also authenticate the user (and set a UserId).
+        /// </summary>
+        /// <param name="appId">Get your Photon Chat AppId from the <a href="https://www.photonengine.com/en/Chat/Dashboard">Dashboard</a>.</param>
+        /// <param name="appVersion">Any version string you make up. Used to separate users and variants of your clients, which might be incompatible.</param>
+        /// <param name="authValues">Values for authentication. You can leave this null, if you set a UserId before. If you set authValues, they will override any UserId set before.</param>
+        /// <returns></returns>
         public bool Connect(string appId, string appVersion, AuthenticationValues authValues)
 		{
             this.chatPeer.TimePingInterval = 3000;
             this.DisconnectedCause = ChatDisconnectCause.None;
 
-            this.AuthValues = authValues;
+            if (authValues != null)
+            {
+                this.AuthValues = authValues;
+            }
             this.AppId = appId;
             this.AppVersion = appVersion;
             this.didAuthenticate = false;
             this.msDeltaForServiceCalls = 100;
+            this.chatPeer.QuickResendAttempts = 2;
+            this.chatPeer.SentCountAllowance = 7;
 
 
             // clean all channels
@@ -520,6 +532,22 @@ namespace ExitGames.Client.Photon.Chat
             {
                 return this.PrivateChannels.TryGetValue(channelName, out channel);
             }
+        }
+
+        /// <summary>
+        /// Simplified access to all channels by name. Checks public channels first, then private ones.
+        /// </summary>
+        /// <param name="channelName">Name of the channel to get.</param>
+        /// <param name="channel">Out parameter gives you the found channel, if any.</param>
+        /// <returns>True if the channel was found.</returns>
+        public bool TryGetChannel(string channelName, out ChatChannel channel)
+        {
+            bool found = false;
+            found = this.PublicChannels.TryGetValue(channelName, out channel);
+            if (found) return true;
+
+            found = this.PrivateChannels.TryGetValue(channelName, out channel);
+            return found;
         }
 
         public void SendAcksOnly()

@@ -198,7 +198,10 @@ public class PhotonView : Photon.MonoBehaviour
     /// </remarks>
     public PhotonPlayer owner
     {
-        get { return PhotonPlayer.Find(this.ownerId); }
+        get
+        {
+            return PhotonPlayer.Find(this.ownerId);
+        }
     }
 
     public int OwnerActorNr
@@ -547,8 +550,8 @@ public class PhotonView : Photon.MonoBehaviour
     /// <remarks>
     /// Set PhotonNetwork.UseRpcMonoBehaviourCache to true to enable the caching.
     /// Uses this.GetComponents<MonoBehaviour>() to get a list of MonoBehaviours to call RPCs on (potentially).
-    /// 
-    /// While PhotonNetwork.UseRpcMonoBehaviourCache is false, this method has no effect, 
+    ///
+    /// While PhotonNetwork.UseRpcMonoBehaviourCache is false, this method has no effect,
     /// because the list is refreshed when a RPC gets called.
     /// </remarks>
     public void RefreshRpcMonoBehaviourCache()

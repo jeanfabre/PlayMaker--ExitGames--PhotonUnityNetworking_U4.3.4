@@ -4,7 +4,7 @@ using UnityEngine;
 public class ClickDetector : MonoBehaviour
 {
 
-	void Update()
+    public void Update()
     {
         // if this player is not "it", the player can't tag anyone, so don't do anything on collision
         if (PhotonNetwork.player.ID != GameLogic.playerWhoIsIt)
@@ -22,7 +22,7 @@ public class ClickDetector : MonoBehaviour
                 GameLogic.TagPlayer(rootView.owner.ID);
             }
         }
-	}
+    }
 
     private GameObject RaycastObject(Vector2 screenPos)
     {

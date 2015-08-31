@@ -17,9 +17,9 @@ Android and iOS Exports
 
 Help and Documentation
 	Please read the included chm (or pdf).
-	Unity Forum Thread (up to date info): http://forum.unity3d.com/threads/101734-Submitting-Photon-Unity-Networking
-	Exit Games Forum: http://forum.exitgames.com/viewforum.php?f=17
-	Online documentation: http://doc.exitgames.com/en/pun
+	Exit Games Forum: http://forum.photonengine.com/categories/unity-networking-plugin-pun
+	Online documentation: http://doc.photonengine.com/en/pun
+    Unity Forum Thread (up to date info): http://forum.unity3d.com/threads/101734-Submitting-Photon-Unity-Networking
 
 
 Integration
@@ -41,20 +41,20 @@ Server
 	
 	The window "Photon Unity Networking" will help you setup a Photon Cloud account.
 	This service is geared towards room-based games and the server cannot be modified.
-	Read more about it: http://www.exitgames.com
+	Read more about it: http://www.photonengine.com
 
 	Alternatively, download the Server SDK and run your own Photon Server.
 	The SDK has the binaries to run immediately but also includes the source code and projects
 	for the game logic. You can use that as basis to modify and extend it.
 	A 100 concurrent user license is free (also for commercial use) per game.
-	Read more about it: http://www.exitgames.com/en/OnPremise
+	Read more about it: http://www.photonengine.com/en/OnPremise
 
 
 PUN+ and Networking Guide Subscriptions
     Follow these steps when you bought an asset that includes an upgrade for a Photon Cloud subscription:
-        • Use an existing Photon Cloud Account or register here: https://www.exitgames.com/Account/SignUp 
-        • Sign in and open the Dashboard. 
-        • Select the Subscription you want to upgrade and click the button "Apply Unity Purchase".
+        • Use an existing Photon Cloud Account or register.     https://www.photonengine.com/Account/SignUp 
+        • Sign in and open the Dashboard.                       https://www.photonengine.com/en-US/Realtime/Dashboard
+        • Select the Subscription to upgrade and click "Apply Unity Purchase".
         • Enter your Unity Invoice Number and click "Redeem".
 
 
