@@ -31,6 +31,7 @@ namespace ExitGames.Client.Photon.Chat
     /// </remarks>
     public class ChatClient : IPhotonPeerListener
     {
+        const int FriendRequestListMax = 1024;
         /// <summary>The address of last connected Name Server.</summary>
         public string NameServerAddress { get; private set; }
         /// <summary>The address of the actual chat server assigned from NameServer. Public for read only.</summary>
@@ -84,7 +85,6 @@ namespace ExitGames.Client.Photon.Chat
         public readonly Dictionary<string, ChatChannel> PublicChannels;
         public readonly Dictionary<string, ChatChannel> PrivateChannels;
 
-
         private readonly IChatClientListener listener = null;
         internal ChatPeer chatPeer = null;
 
@@ -133,6 +133,16 @@ namespace ExitGames.Client.Photon.Chat
             if (authValues != null)
             {
                 this.AuthValues = authValues;
+                if (this.AuthValues.UserId == null || this.AuthValues.UserId == "")
+                {
+                    this.listener.DebugReturn(DebugLevel.ERROR, "Connect failed: no UserId specified in authentication values");
+                    return false;
+                }
+            }
+            else
+            {
+                this.listener.DebugReturn(DebugLevel.ERROR, "Connect failed: no authentication values specified");
+                return false;
             }
             this.AppId = appId;
             this.AppVersion = appVersion;
@@ -209,7 +219,7 @@ namespace ExitGames.Client.Photon.Chat
         {
             if (!this.CanChat)
             {
-                // TODO: log error
+                this.listener.DebugReturn(DebugLevel.ERROR, "Subscribe called while not connected to front end server.");
                 return false;
             }
 
@@ -237,7 +247,7 @@ namespace ExitGames.Client.Photon.Chat
         {
             if (!this.CanChat)
             {
-                // TODO: log error
+                this.listener.DebugReturn(DebugLevel.ERROR, "Unsubscribe called while not connected to front end server.");
                 return false;
             }
 
@@ -262,7 +272,7 @@ namespace ExitGames.Client.Photon.Chat
         {
             if (!this.CanChat)
             {
-                // TODO: log error
+                this.listener.DebugReturn(DebugLevel.ERROR, "PublishMessage called while not connected to front end server.");
                 return false;
             }
 
@@ -303,7 +313,7 @@ namespace ExitGames.Client.Photon.Chat
         {
             if (!this.CanChat)
             {
-                // TODO: log error
+                this.listener.DebugReturn(DebugLevel.ERROR, "SendPrivateMessage called while not connected to front end server.");
                 return false;
             }
 
@@ -342,7 +352,7 @@ namespace ExitGames.Client.Photon.Chat
         {
             if (!this.CanChat)
             {
-                // TODO: log error
+                this.listener.DebugReturn(DebugLevel.ERROR, "SetOnlineStatus called while not connected to front end server.");
                 return false;
             }
 
@@ -425,13 +435,18 @@ namespace ExitGames.Client.Photon.Chat
         {
             if (!this.CanChat)
             {
-                // TODO: log error
+                this.listener.DebugReturn(DebugLevel.ERROR, "AddFriends called while not connected to front end server.");
                 return false;
             }
 
             if (friends == null || friends.Length == 0)
             {
                 this.listener.DebugReturn(DebugLevel.WARNING, "AddFriends can't be called for empty or null list.");
+                return false;
+            }
+            if (friends.Length > FriendRequestListMax)
+            {
+                this.listener.DebugReturn(DebugLevel.WARNING, "AddFriends max list size exceeded: " + friends.Length + " > " + FriendRequestListMax);
                 return false;
             }
 
@@ -488,13 +503,18 @@ namespace ExitGames.Client.Photon.Chat
         {
             if (!this.CanChat)
             {
-                // TODO: log error
+                this.listener.DebugReturn(DebugLevel.ERROR, "RemoveFriends called while not connected to front end server.");
                 return false;
             }
 
             if (friends == null || friends.Length == 0)
             {
                 this.listener.DebugReturn(DebugLevel.WARNING, "RemoveFriends can't be called for empty or null list.");
+                return false;
+            }
+            if (friends.Length > FriendRequestListMax)
+            {
+                this.listener.DebugReturn(DebugLevel.WARNING, "RemoveFriends max list size exceeded: " + friends.Length + " > " + FriendRequestListMax);
                 return false;
             }
 
@@ -615,7 +635,14 @@ namespace ExitGames.Client.Photon.Chat
                 default:
                     if (operationResponse.ReturnCode != 0)
                     {
-                        this.listener.DebugReturn(DebugLevel.ERROR, string.Format("Chat Operation {0} failed (Code: {1}). Debug Message: {2}", operationResponse.OperationCode, operationResponse.ReturnCode, operationResponse.DebugMessage));
+                        if (operationResponse.ReturnCode == -2)
+                        {
+                            this.listener.DebugReturn(DebugLevel.ERROR, string.Format("Chat Operation {0} unknown on server. Check your AppId and make sure it's for a Chat application.", operationResponse.OperationCode));
+                        }
+                        else
+                        {
+                            this.listener.DebugReturn(DebugLevel.ERROR, string.Format("Chat Operation {0} failed (Code: {1}). Debug Message: {2}", operationResponse.OperationCode, operationResponse.ReturnCode, operationResponse.DebugMessage));
+                        }
                     }
                     break;
             }
@@ -747,7 +774,7 @@ namespace ExitGames.Client.Photon.Chat
             ChatChannel channel;
             if (!this.PublicChannels.TryGetValue(channelName, out channel))
             {
-                // TODO: log that channel wasn't found
+                this.listener.DebugReturn(DebugLevel.WARNING, "Channel " + channelName + " for incoming message event not found.");
                 return;
             }
 
@@ -812,7 +839,7 @@ namespace ExitGames.Client.Photon.Chat
                     }
                     else
                     {
-                        //TODO: error reaction!
+                        this.listener.DebugReturn(DebugLevel.ERROR, "No secret in authentication response.");
                     }
                 }
                 else if (this.State == ChatState.ConnectingToFrontEnd)
@@ -846,7 +873,7 @@ namespace ExitGames.Client.Photon.Chat
                         this.DisconnectedCause = ChatDisconnectCause.OperationNotAllowedInCurrentState;
                         break;
                 }
-
+                this.listener.DebugReturn(DebugLevel.ERROR, "Authentication request error: " + operationResponse.ReturnCode + ". Disconnecting.");
                 this.State = ChatState.Disconnecting;
                 this.chatPeer.Disconnect();
             }
@@ -878,14 +905,22 @@ namespace ExitGames.Client.Photon.Chat
         {
             if (this.AuthValues != null)
             {
-                var opParameters = new Dictionary<byte, object> {{(byte)ChatParameterCode.Secret, this.AuthValues.Token}};
-                return this.chatPeer.OpCustom((byte)ChatOperationCode.Authenticate, opParameters, true);
+                if (this.AuthValues.Token == null || this.AuthValues.Token == "")
+                {
+                    this.listener.DebugReturn(DebugLevel.ERROR, "Can't authenticate on front end server. Secret is not set");
+                    return false;
+                }
+                else
+                {
+                    var opParameters = new Dictionary<byte, object> { { (byte)ChatParameterCode.Secret, this.AuthValues.Token } };
+                    return this.chatPeer.OpCustom((byte)ChatOperationCode.Authenticate, opParameters, true);
+                }
             }
             else
             {
-                Debug.WriteLine("Can't authenticate on front end server. CustomAuthValues is null");
+                this.listener.DebugReturn(DebugLevel.ERROR, "Can't authenticate on front end server. Authentication Values are not set");
+                return false;
             }
-            return false;
         }
 
         #endregion

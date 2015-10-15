@@ -188,9 +188,9 @@ public class RoomInfo
         // check of this game was removed from the list. in that case, we don't
         // need to read any further properties
         // list updates will remove this game from the game listing
-        if (propertiesToCache.ContainsKey(GameProperties.Removed))
+        if (propertiesToCache.ContainsKey(GamePropertyKey.Removed))
         {
-            this.removedFromList = (Boolean)propertiesToCache[GameProperties.Removed];
+            this.removedFromList = (Boolean)propertiesToCache[GamePropertyKey.Removed];
             if (this.removedFromList)
             {
                 return;
@@ -198,43 +198,43 @@ public class RoomInfo
         }
 
         // fetch the "well known" properties of the room, if available
-        if (propertiesToCache.ContainsKey(GameProperties.MaxPlayers))
+        if (propertiesToCache.ContainsKey(GamePropertyKey.MaxPlayers))
         {
-            this.maxPlayersField = (byte)propertiesToCache[GameProperties.MaxPlayers];
+            this.maxPlayersField = (byte)propertiesToCache[GamePropertyKey.MaxPlayers];
         }
 
-        if (propertiesToCache.ContainsKey(GameProperties.IsOpen))
+        if (propertiesToCache.ContainsKey(GamePropertyKey.IsOpen))
         {
-            this.openField = (bool)propertiesToCache[GameProperties.IsOpen];
+            this.openField = (bool)propertiesToCache[GamePropertyKey.IsOpen];
         }
 
-        if (propertiesToCache.ContainsKey(GameProperties.IsVisible))
+        if (propertiesToCache.ContainsKey(GamePropertyKey.IsVisible))
         {
-            this.visibleField = (bool)propertiesToCache[GameProperties.IsVisible];
+            this.visibleField = (bool)propertiesToCache[GamePropertyKey.IsVisible];
         }
 
-        if (propertiesToCache.ContainsKey(GameProperties.PlayerCount))
+        if (propertiesToCache.ContainsKey(GamePropertyKey.PlayerCount))
         {
-            this.playerCount = (int)((byte)propertiesToCache[GameProperties.PlayerCount]);
+            this.playerCount = (int)((byte)propertiesToCache[GamePropertyKey.PlayerCount]);
         }
 
-        if (propertiesToCache.ContainsKey(GameProperties.CleanupCacheOnLeave))
+        if (propertiesToCache.ContainsKey(GamePropertyKey.CleanupCacheOnLeave))
         {
-            this.autoCleanUpField = (bool)propertiesToCache[GameProperties.CleanupCacheOnLeave];
+            this.autoCleanUpField = (bool)propertiesToCache[GamePropertyKey.CleanupCacheOnLeave];
         }
 
-        if (propertiesToCache.ContainsKey(GameProperties.MasterClientId))
+        if (propertiesToCache.ContainsKey(GamePropertyKey.MasterClientId))
         {
             this.serverSideMasterClient = true;
             bool isUpdate = this.masterClientIdField != 0;
-            this.masterClientIdField = (int) propertiesToCache[GameProperties.MasterClientId];
+            this.masterClientIdField = (int) propertiesToCache[GamePropertyKey.MasterClientId];
             if (isUpdate)
             {
                 PhotonNetwork.networkingPeer.UpdateMasterClient();
             }
         }
 
-        //if (propertiesToCache.ContainsKey(GameProperties.PropsListedInLobby))
+        //if (propertiesToCache.ContainsKey(GamePropertyKey.PropsListedInLobby))
         //{
         //    // could be cached but isn't useful
         //}

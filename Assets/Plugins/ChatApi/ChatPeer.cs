@@ -182,22 +182,29 @@ namespace ExitGames.Client.Photon.Chat
     /// values to Photon which will verify them before granting access or disconnecting the client.
     ///
     /// The Photon Cloud Dashboard will let you enable this feature and set important server values for it.
-    /// https://www.exitgames.com/dashboard
+    /// https://www.photonengine.com/dashboard
     /// </remarks>
     public class AuthenticationValues
     {
+        /// <summary>See AuthType.</summary>
+        private CustomAuthenticationType authType = CustomAuthenticationType.None;
+
         /// <summary>The type of custom authentication provider that should be used. Currently only "Custom" or "None" (turns this off).</summary>
-        public CustomAuthenticationType AuthType = CustomAuthenticationType.None;
+        public CustomAuthenticationType AuthType
+        {
+            get { return authType; }
+            set { authType = value; }
+        }
 
         /// <summary>This string must contain any (http get) parameters expected by the used authentication service. By default, username and token.</summary>
         /// <remarks>Standard http get parameters are used here and passed on to the service that's defined in the server (Photon Cloud Dashboard).</remarks>
-        public string AuthGetParameters;
+        public string AuthGetParameters { get; set; }
 
         /// <summary>Data to be passed-on to the auth service via POST. Default: null (not sent). Either string or byte[] (see setters).</summary>
         public object AuthPostData { get; private set; }
 
         /// <summary>After initial authentication, Photon provides a token for this client / user, which is subsequently used as (cached) validation.</summary>
-        public string Token;
+        public string Token { get; set; }
 
         /// <summary>The UserId should be a unique identifier per user. This is for finding friends, etc..</summary>
         public string UserId { get; set; }
@@ -216,7 +223,7 @@ namespace ExitGames.Client.Photon.Chat
         }
 
         /// <summary>Sets the data to be passed-on to the auth service via POST.</summary>
-        /// <param name="byteData">Binary token / auth-data to pass on. Empty string will set AuthPostData to null.</param>
+        /// <param name="stringData">String data to be used in the body of the POST request. Null or empty string will set AuthPostData to null.</param>
         public virtual void SetAuthPostData(string stringData)
         {
             this.AuthPostData = (string.IsNullOrEmpty(stringData)) ? null : stringData;
@@ -336,7 +343,7 @@ namespace ExitGames.Client.Photon.Chat
         /// <remarks>
         /// Some subscription plans for the Photon Cloud are region-bound. Servers of other regions can't be used then.
         /// Check your master server address and compare it with your Photon Cloud Dashboard's info.
-        /// https://cloud.exitgames.com/dashboard
+        /// https://cloud.photonengine.com/dashboard
         ///
         /// OpAuthorize is part of connection workflow but only on the Photon Cloud, this error can happen.
         /// Self-hosted Photon servers with a CCU limited license won't let a client connect at all.

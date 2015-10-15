@@ -1,3 +1,23 @@
+v1.62 (13. October 2015)
+Fixed: Clean up of instantiated Game Objects (Clean Up Cache on Leave). This bug was only in v1.61.
+Changed: PhotonView.OnDestroy() to not use Application.isLoadingLevel in Unity 5.2 (which makes it obsolete). Loading a level will destroy a GameObject without using PhotonNetwork.Destroy() and that can lead to errors. When loading a level that's ok. The logging got adjusted for this case.
+Added: PhotonNetwork.BackgroundTimeout. It defines after how many seconds PUN will close a connection, when Unity called OnApplicationPause(true). By default, this is not active but on Android (e.g.), it can be useful to close a connection when the app is in background for a while.
+
+v1.61 (17. September 2015)
+Added: Option to use an Object Pool. Implement IPunPrefabPool and assign it to PhotonNetwork.PrefabPool. Note: GameObjects will not run Awake() and Start() but PUN will call OnPhotonInstantiate() as if the GameObject would be new.
+Changed: The internal state when PUN connected to the Master Server but did not yet authenticate. The server does not allow you to do requests before authenticate and the new state reflects this. This also affects connectedAndReady for that state.
+Removed: Obsolete variants of methods: JoinRoom(), CreateRoom().
+Fixed: A bug with PhotonAnimatorView, which could cause exceptions when there was only 1 sample in a "continuous updates" message.
+Fixed: Docs for codeAndMessage parameters. The error code is of short type, not int. This applies to some callbacks. Usually, this requires no code adjustments.
+Fixed: An issue for AuthenticationValues.AuthType. If you used Object Initialization for this, some types could not be set due to a compiling issue. Now this is a property with a backup field and those work fine.
+Changed: PhotonHandler is no longer a IPhotonPeerListener and does not implement those callbacks. They were empty, aside from DebugReturn(). This is now implemented by NetworkingPeer (too).
+Updated: Photon assemblies to v4.0.0.11 with various fixes and enhancements. See release_history.txt.
+Added: Better description to PhotonNetwork playerList and otherPlayers.
+Changed: The Editor field ObservedComponentsFoldoutOpen for PhotonViews is now exclusively available in the Editor. It only stores if the Inspector should show the Observed list or fold it. 
+Internal: The NetworkingPeer now creates the base without a Listener and then assigns itself to make sure there is one. The externalListener is no longer needed.
+Internal: Refactored a lot in classes NetworkingPeer and LoadBalancingPeer. The code is more like that of the LoadBalancing API now.
+
+
 v1.60 (30. July 2015)
 Added: PhotonNetwork.EnableLobbyStatistics to enable/request statistics about lobbies and .LobbyStatistics as list of lobbies (available while on the Master Server). The list of lobbies is provided as a list of TypedLobbyInfo per lobby, which wraps room- and player-count per lobby (so you can find the active ones).
 Added: Callback OnLobbyStatisticsUpdate(). Implement this to be notified when new lobby statistics become available (to update your UI, etc).
