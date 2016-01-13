@@ -5,6 +5,7 @@
 // --------------------------------------------------------------------------------------------------------------------
 
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class WorkerInGame : Photon.MonoBehaviour
 {
@@ -15,7 +16,7 @@ public class WorkerInGame : Photon.MonoBehaviour
         // in case we started this demo with the wrong scene being active, simply load the menu scene
         if (!PhotonNetwork.connected)
         {
-            Application.LoadLevel(WorkerMenu.SceneNameMenu);
+            SceneManager.LoadScene(WorkerMenu.SceneNameMenu);
             return;
         }
 
@@ -58,17 +59,17 @@ public class WorkerInGame : Photon.MonoBehaviour
     public void OnLeftRoom()
     {
         Debug.Log("OnLeftRoom (local)");
-        
-        // back to main menu        
-        Application.LoadLevel(WorkerMenu.SceneNameMenu);
+
+        // back to main menu
+        SceneManager.LoadScene(WorkerMenu.SceneNameMenu);
     }
 
     public void OnDisconnectedFromPhoton()
     {
         Debug.Log("OnDisconnectedFromPhoton");
 
-        // back to main menu        
-        Application.LoadLevel(WorkerMenu.SceneNameMenu);
+        // back to main menu
+        SceneManager.LoadScene(WorkerMenu.SceneNameMenu);
     }
 
     public void OnPhotonInstantiate(PhotonMessageInfo info)
@@ -90,7 +91,7 @@ public class WorkerInGame : Photon.MonoBehaviour
     {
         Debug.Log("OnFailedToConnectToPhoton");
 
-        // back to main menu        
-        Application.LoadLevel(WorkerMenu.SceneNameMenu);
+        // back to main menu
+        SceneManager.LoadScene(WorkerMenu.SceneNameMenu);
     }
 }

@@ -5,7 +5,7 @@
 // <summary>
 //   Provides the operations needed to use the loadbalancing server app(s).
 // </summary>
-// <author>developer@exitgames.com</author>
+// <author>developer@photonengine.com</author>
 // ----------------------------------------------------------------------------
 
 using System;
@@ -76,7 +76,7 @@ namespace ExitGames.Client.Photon
         /// Leaves the lobby on the Master Server.
         /// This is an async request which triggers a OnOperationResponse() call.
         /// </summary>
-        /// <returns>If the operation could be sent (has to be connected).</returns>
+        /// <returns>If the operation could be sent (requires connection).</returns>
         public virtual bool OpLeaveLobby()
         {
             if (this.DebugOut >= DebugLevel.INFO)
@@ -238,13 +238,13 @@ namespace ExitGames.Client.Photon
                 if (opParams.Lobby != null)
                 {
                     op[ParameterCode.LobbyName] = opParams.Lobby.Name;
-                    op[ParameterCode.LobbyType] = (byte) opParams.Lobby.Type;
+                    op[ParameterCode.LobbyType] = (byte)opParams.Lobby.Type;
                 }
             }
 
             //if (opParams.ActorId != 0)
             //{
-            //    op[ParameterCode.JoinMode] = (byte)JoinMode.JoinOrRejoin;
+            //    op[ParameterCode.JoinMode] = (byte)JoinMode.RejoinOnly; // changed from JoinMode.JoinOrRejoin
             //    op[ParameterCode.ActorNr] = opParams.ActorId;
             //}
 
@@ -375,8 +375,10 @@ namespace ExitGames.Client.Photon
         /// </summary>
         /// <param name="actorNr">The payer ID (a.k.a. actorNumber) of the player to attach these properties to.</param>
         /// <param name="actorProperties">The properties to add or update.</param>
+        /// <param name="expectedProperties">If set, these must be in the current properties-set (on the server) to set actorProperties: CAS.</param>
+        /// <param name="webForward">Set to true, to forward the set properties to a WebHook, defined for this app (in Dashboard).</param>
         /// <returns>If the operation could be sent (requires connection).</returns>
-        protected internal bool OpSetPropertiesOfActor(int actorNr, Hashtable actorProperties, Hashtable expectedProperties = null)
+        protected internal bool OpSetPropertiesOfActor(int actorNr, Hashtable actorProperties, Hashtable expectedProperties = null, bool webForward = false)
         {
             if (this.DebugOut >= DebugLevel.INFO)
             {
@@ -401,7 +403,13 @@ namespace ExitGames.Client.Photon
                 opParameters.Add(ParameterCode.ExpectedValues, expectedProperties);
             }
 
-            return this.OpCustom((byte) OperationCode.SetProperties, opParameters, true, 0, false);
+            if (webForward)
+            {
+                opParameters[ParameterCode.EventForward] = true;
+            }
+
+            //UnityEngine.Debug.Log(opParameters.ToStringFull());
+            return this.OpCustom((byte)OperationCode.SetProperties, opParameters, true, 0, false);
         }
 
 
@@ -409,22 +417,23 @@ namespace ExitGames.Client.Photon
         {
             Hashtable properties = new Hashtable();
             properties[propCode] = value;
-            this.OpSetPropertiesOfRoom(properties, false, null);
+            this.OpSetPropertiesOfRoom(properties, expectedProperties: null, webForward: false);
         }
 
         public bool OpSetCustomPropertiesOfRoom(Hashtable gameProperties, bool broadcast, byte channelId)
         {
-            return this.OpSetPropertiesOfRoom(gameProperties.StripToStringKeys(), false, null);
+            return this.OpSetPropertiesOfRoom(gameProperties.StripToStringKeys(), expectedProperties: null, webForward: false);
         }
 
         /// <summary>
         /// Sets properties of a room.
         /// Internally this uses OpSetProperties, which can be used to either set room or player properties.
         /// </summary>
-        /// <param name="gameProperties"></param>
-        /// <param name="webForward"></param>
+        /// <param name="gameProperties">The properties to add or update.</param>
+        /// <param name="expectedProperties">The properties expected when update occurs. (CAS : "Check And Swap")</param>
+        /// <param name="webForward">"WebFlag" to indicate if request should be forwarded as "PathProperties" webhook or not.</param>
         /// <returns>If the operation could be sent (has to be connected).</returns>
-        protected internal bool OpSetPropertiesOfRoom(Hashtable gameProperties, bool webForward, Hashtable expectedProperties = null)
+        protected internal bool OpSetPropertiesOfRoom(Hashtable gameProperties, Hashtable expectedProperties = null, bool webForward = false)
         {
             if (this.DebugOut >= DebugLevel.INFO)
             {
@@ -442,10 +451,9 @@ namespace ExitGames.Client.Photon
             if (webForward)
             {
                 opParameters[ParameterCode.EventForward] = true;
-                //UnityEngine.Debug.LogWarning("Forwarding props. To player.ID: " + gameProperties["turn"]);
             }
 
-            return this.OpCustom((byte) OperationCode.SetProperties, opParameters, true, 0, false);
+            return this.OpCustom((byte)OperationCode.SetProperties, opParameters, true, 0, false);
         }
 
         /// <summary>

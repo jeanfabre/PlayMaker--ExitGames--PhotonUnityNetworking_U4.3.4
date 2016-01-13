@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class HubGui : MonoBehaviour
 {
@@ -117,7 +118,7 @@ public class HubGui : MonoBehaviour
         {
             if (GUILayout.Button(this.demoBtn.Text))
             {
-                Application.LoadLevel(this.demoBtn.Link);
+                SceneManager.LoadScene(this.demoBtn.Link);
             }
         }
         if (!string.IsNullOrEmpty(this.webLink.Text))

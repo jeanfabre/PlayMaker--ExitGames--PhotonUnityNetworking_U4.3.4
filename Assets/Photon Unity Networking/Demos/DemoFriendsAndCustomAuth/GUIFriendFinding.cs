@@ -51,7 +51,7 @@ public class GUIFriendFinding : MonoBehaviour
 
     public void OnGUI()
     {
-        if (!PhotonNetwork.insideLobby)
+        if (!PhotonNetwork.connectedAndReady || PhotonNetwork.Server != ServerConnection.MasterServer)
         {
             // this feature is only available on the Master Client. Check either: insideLobby or 
             // PhotonNetwork.connectionStateDetailed == PeerState.Authenticated or 

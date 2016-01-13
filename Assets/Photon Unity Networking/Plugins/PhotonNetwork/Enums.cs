@@ -63,11 +63,12 @@ public enum PhotonNetworkingMessage
     OnLeftRoom,
 
     /// <summary>
-    /// Called after switching to a new MasterClient when the current one leaves. The former already got removed from the player list.
+    /// Called after switching to a new MasterClient when the current one leaves.
     /// </summary>
     /// <remarks>
     /// This is not called when this client enters a room.
-    ///
+    /// The former MasterClient is still in the player list when this method get called.
+    /// 
     /// Example: void OnMasterClientSwitched(PhotonPlayer newMasterClient) { ... }
     /// </remarks>
     OnMasterClientSwitched,

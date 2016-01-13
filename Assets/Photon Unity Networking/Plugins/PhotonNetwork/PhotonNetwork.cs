@@ -10,6 +10,7 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 using ExitGames.Client.Photon;
+using UnityEngine.SceneManagement;
 using Debug = UnityEngine.Debug;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
 
@@ -27,7 +28,7 @@ using System.IO;
 public static class PhotonNetwork
 {
     /// <summary>Version number of PUN. Also used in GameVersion to separate client version from each other.</summary>
-    public const string versionPUN = "1.62";
+    public const string versionPUN = "1.65";
 
     /// <summary>Version string for your this build. Can be used to separate incompatible clients. Sent during connect.</summary>
     /// <remarks>This is only sent when you connect so that is also the place you set it usually (e.g. in ConnectUsingSettings).</remarks>
@@ -479,24 +480,23 @@ public static class PhotonNetwork
             if (value && connected)
             {
                 Debug.LogError("Can't start OFFLINE mode while connected!");
+                return;
+            }
+
+            if (networkingPeer.PeerState != PeerStateValue.Disconnected)
+            {
+                networkingPeer.Disconnect(); // Cleanup (also calls OnLeftRoom to reset stuff)
+            }
+            isOfflineMode = value;
+            if (isOfflineMode)
+            {
+                networkingPeer.ChangeLocalID(-1);
+                NetworkingPeer.SendMonoMessage(PhotonNetworkingMessage.OnConnectedToMaster);
             }
             else
             {
-                if (networkingPeer.PeerState != PeerStateValue.Disconnected)
-                {
-                    networkingPeer.Disconnect(); // Cleanup (also calls OnLeftRoom to reset stuff)
-                }
-                isOfflineMode = value;
-                if (isOfflineMode)
-                {
-                    networkingPeer.ChangeLocalID(-1);
-                    NetworkingPeer.SendMonoMessage(PhotonNetworkingMessage.OnConnectedToMaster);
-                }
-                else
-                {
-                    offlineModeRoom = null;
-                    networkingPeer.ChangeLocalID(-1);
-                }
+                offlineModeRoom = null;
+                networkingPeer.ChangeLocalID(-1);
             }
         }
     }
@@ -538,19 +538,17 @@ public static class PhotonNetwork
     private static bool _mAutomaticallySyncScene = false;
 
     /// <summary>
-    /// This setting defines if players in a room should destroy a leaving player's instantiated GameObjects and PhotonViews.
-    ///
-    /// When "this client" creates a room/game, autoCleanUpPlayerObjects is copied to that room's properties and used by all
-    /// PUN clients in that room (no matter what their autoCleanUpPlayerObjects value is).
-    ///
-    /// If room.AutoCleanUp is enabled in a room, the PUN clients will destroy a player's objects on leave.
+    /// This setting defines per room, if network-instantiated GameObjects (with PhotonView) get cleaned up when the creator of it leaves.
     /// </summary>
     /// <remarks>
-    /// When enabled, the server will clean RPCs, instantiated GameObjects and PhotonViews of the leaving player and joining
-    /// players won't get those at anymore.
+    /// This setting is done per room. It can't be changed in the room and it will override the settings of individual clients.
     ///
-    /// Once a room is created, this setting can't be changed anymore.
+    /// If room.AutoCleanUp is enabled in a room, the PUN clients will destroy a player's GameObjects on leave.
+    /// This includes GameObjects manually instantiated (via RPCs, e.g.).
+    /// When enabled, the server will clean RPCs, instantiated GameObjects and PhotonViews of the leaving player, too. and
+    /// Players who join after someone left, won't get the events of that player anymore.
     ///
+    /// Under the hood, this setting is stored as a Custom Room Property.
     /// Enabled by default.
     /// </remarks>
     public static bool autoCleanUpPlayerObjects
@@ -815,21 +813,47 @@ public static class PhotonNetwork
     }
 
     /// <summary>
+    /// The current server's millisecond timestamp.
+    /// </summary>
+    /// <remarks>
+    /// This can be useful to sync actions and events on all clients in one room.
+    /// The timestamp is based on the server's Environment.TickCount.
+    ///
+    /// It will overflow from a positive to a negative value every so often, so
+    /// be careful to use only time-differences to check the time delta when things
+    /// happen.
+    ///
+    /// This is the basis for PhotonNetwork.time.
+    /// </remarks>
+    public static int ServerTimestamp
+    {
+        get
+        {
+            if (offlineMode)
+            {
+                return Environment.TickCount;
+            }
+
+            return networkingPeer.ServerTimeInMilliSeconds;
+        }
+    }
+
+    /// <summary>
     /// Defines after how many seconds PUN will close a connection, after Unity's OnApplicationPause(true) call.
     /// </summary>
     /// <remarks>
     /// The value is set in seconds.
     /// Set a value greater than 0.001f, if you want to disconnect in background.
     /// Default: 0.0f.
-    /// 
-    /// Note: 
-    /// Some platforms (e.g. iOS) don't allow to keep a connection while the app is in background. 
+    ///
+    /// Note:
+    /// Some platforms (e.g. iOS) don't allow to keep a connection while the app is in background.
     /// In those cases, this value does not change anything.
-    /// 
+    ///
     /// Unity's OnApplicationPause() callback is broken in some exports (Android) of some Unity versions.
     /// Make sure OnApplicationPause() gets the callbacks you'd expect on the platform you target!
     /// Check PhotonHandler.OnApplicationPause(bool pause), to see the implementation.
-    /// 
+    ///
     /// </remarks>
     public static float BackgroundTimeout = 0.0f;
 
@@ -1557,20 +1581,20 @@ public static class PhotonNetwork
     ///  <remarks>
     ///  When successful, this calls the callbacks OnCreatedRoom and OnJoinedRoom (the latter, cause you join as first player).
     ///  If the room can't be created (because it exists already), OnPhotonCreateRoomFailed gets called.
-    /// 
+    ///
     ///  If you don't want to create a unique room-name, pass null or "" as name and the server will assign a roomName (a GUID as string).
-    /// 
+    ///
     ///  Rooms can be created in any number of lobbies. Those don't have to exist before you create a room in them (they get
     ///  auto-created on demand). Lobbies can be useful to split room lists on the server-side already. That can help keep the room
     ///  lists short and manageable.
     ///  If you set a typedLobby parameter, the room will be created in that lobby (no matter if you are active in any).
     ///  If you don't set a typedLobby, the room is automatically placed in the currently active lobby (if any) or the
     ///  default-lobby.
-    /// 
+    ///
     ///  Call this only on the master server.
     ///  Internally, the master will respond with a server-address (and roomName, if needed). Both are used internally
     ///  to switch to the assigned game server and roomName.
-    /// 
+    ///
     ///  PhotonNetwork.autoCleanUpPlayerObjects will become this room's autoCleanUp property and that's used by all clients that join this room.
     ///  </remarks>
     /// <param name="roomName">Unique name of the room to create. Pass null or "" to make the server generate a name.</param>
@@ -1602,7 +1626,7 @@ public static class PhotonNetwork
         opParams.RoomOptions = roomOptions;
         opParams.Lobby = typedLobby;
         //opParams.ExpectedUsers = expectedUsers;
-        
+
         return networkingPeer.OpCreateGame(opParams);
     }
 
@@ -1688,7 +1712,7 @@ public static class PhotonNetwork
             Debug.LogError("JoinOrCreateRoom failed. A roomname is required. If you don't know one, how will you join?");
             return false;
         }
-        
+
         typedLobby = typedLobby ?? ((networkingPeer.insideLobby) ? networkingPeer.lobby : null);  // use given lobby, or active lobby (if any active) or none
 
         LoadbalancingPeer.EnterRoomParams opParams = new LoadbalancingPeer.EnterRoomParams();
@@ -1785,7 +1809,7 @@ public static class PhotonNetwork
             Debug.LogError("JoinRandomRoom failed. Client is not on Master Server or not yet ready to call operations. Wait for callback: OnJoinedLobby or OnConnectedToMaster.");
             return false;
         }
-        
+
         typedLobby = typedLobby ?? ((networkingPeer.insideLobby) ? networkingPeer.lobby : null);  // use given lobby, or active lobby (if any active) or none
 
         LoadbalancingPeer.OpJoinRandomRoomParams opParams = new LoadbalancingPeer.OpJoinRandomRoomParams();
@@ -2441,7 +2465,7 @@ public static class PhotonNetwork
         {
             Hashtable newProps = new Hashtable() { { GamePropertyKey.MasterClientId, masterClientPlayer.ID } };
             Hashtable prevProps = new Hashtable() { { GamePropertyKey.MasterClientId, networkingPeer.mMasterClientId } };
-            return networkingPeer.OpSetPropertiesOfRoom(newProps, false, prevProps);
+            return networkingPeer.OpSetPropertiesOfRoom(newProps, expectedProperties: prevProps, webForward: false);
         }
         else
         {
@@ -2860,7 +2884,7 @@ public static class PhotonNetwork
 
         PhotonNetwork.isMessageQueueRunning = false;
         networkingPeer.loadingLevelAndPausedNetwork = true;
-        Application.LoadLevel(levelNumber);
+        SceneManager.LoadScene(levelNumber);
     }
 
     /// <summary>Wraps loading a level to pause the network mesage-queue. Optionally syncs the loaded level in a room.</summary>
@@ -2886,7 +2910,7 @@ public static class PhotonNetwork
 
         PhotonNetwork.isMessageQueueRunning = false;
         networkingPeer.loadingLevelAndPausedNetwork = true;
-        Application.LoadLevel(levelName);
+        SceneManager.LoadScene(levelName);
     }
 
 

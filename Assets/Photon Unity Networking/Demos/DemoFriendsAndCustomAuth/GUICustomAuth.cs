@@ -10,13 +10,19 @@ public class GUICustomAuth : MonoBehaviour
     private string authDebugMessage = string.Empty;
 
 
-    void Start()
+    public void Start()
     {
         GuiRect = new Rect(Screen.width / 4, 80, Screen.width / 2, Screen.height - 100);
     }
 
 
     public void OnJoinedLobby()
+    {
+        // for ease of use, this script simply deactivates itself on successful connect
+        this.enabled = false;
+    }
+
+    public void OnConnectedToMaster()
     {
         // for ease of use, this script simply deactivates itself on successful connect
         this.enabled = false;

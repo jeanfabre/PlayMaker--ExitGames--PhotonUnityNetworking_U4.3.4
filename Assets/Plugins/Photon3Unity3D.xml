@@ -411,8 +411,19 @@
         </member>
         <member name="M:ExitGames.Client.Photon.IPhotonSocket.TryParseAddress(System.String,System.String@,System.UInt16@)">
             <summary>
-            Ports of IPv4 Addresses are of type ushort. They are used as int usually though.
+            Separates the given address into address (host name or IP) and port. Port must be included after colon!
             </summary>
+            <remarks>
+            This method expects any address to include a port. The final ':' in addressAndPort has to separate it.
+            IPv6 addresses have multiple colons and <b>must use brackets</b> to separate address from port.
+            
+            Examples:
+                ns.exitgames.com:5058
+                http://[2001:db8:1f70::999:de8:7648:6e8]:100/
+                [2001:db8:1f70::999:de8:7648:6e8]:100
+            See:
+                http://serverfault.com/questions/205793/how-can-one-distinguish-the-host-and-the-port-in-an-ipv6-url
+            </remarks>
         </member>
         <member name="T:ExitGames.Client.Photon.NCommand">
             <summary> Internal class for "commands" - the package in which operations are sent.</summary>

@@ -4,6 +4,7 @@
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
+using System.Linq;
 using ExitGames.Client.Photon;
 using System;
 using System.Collections;
@@ -641,7 +642,7 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
         // read game properties and cache them locally
         if (this.CurrentGame != null && gameProperties != null)
         {
-            this.CurrentGame.CacheProperties(gameProperties);
+            this.CurrentGame.InternalCacheProperties(gameProperties);
             SendMonoMessage(PhotonNetworkingMessage.OnPhotonCustomRoomPropertiesChanged, gameProperties);
             if (PhotonNetwork.automaticallySyncScene)
             {
@@ -684,6 +685,12 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
             {
                 otherP.Add(player);
             }
+        }
+
+        string debug = "";
+        foreach (PhotonPlayer player in mPlayerListCopy)
+        {
+            debug += player != null ? player.name : "null";
         }
 
         this.mOtherPlayerListCopy = otherP.ToArray();
@@ -858,7 +865,7 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
     {
         Hashtable newProps = new Hashtable() { { GamePropertyKey.MasterClientId, nextMasterId } };
         Hashtable prevProps = new Hashtable() { { GamePropertyKey.MasterClientId, this.mMasterClientId } };
-        return this.OpSetPropertiesOfRoom(newProps, false, prevProps);
+        return this.OpSetPropertiesOfRoom(newProps, expectedProperties: prevProps, webForward: false);
     }
 
     private Hashtable GetActorPropertiesForActorNr(Hashtable actorProperties, int actorNr)
@@ -1141,7 +1148,11 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
             {
                 Debug.LogError("Operation " + operationResponse.OperationCode + " failed in a server-side plugin. Check the configuration in the Dashboard. Message from server-plugin: " + operationResponse.DebugMessage);
             }
-            else// if (PhotonNetwork.logLevel >= PhotonLogLevel.Informational)
+            else if (operationResponse.ReturnCode == ErrorCode.NoRandomMatchFound)
+            {
+                Debug.LogWarning("Operation failed: " + operationResponse.ToStringFull());
+            }
+            else
             {
                 Debug.LogError("Operation failed: " + operationResponse.ToStringFull() + " Server: " + this.server);
             }
@@ -1819,7 +1830,10 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
                     int newOwnerId = transferViewToUserID[1];
 
                     PhotonView pv = PhotonView.Find(requestedViewId);
-                    pv.ownerId = newOwnerId;
+                    if (pv != null)
+                    {
+                        pv.ownerId = newOwnerId;
+                    }
 
                     break;
                 }
@@ -2725,8 +2739,6 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
                 continue;
             }
 
-            view.destroyedByPhotonNetwork = true;
-
             // we only destroy/clean PhotonViews that were created by PhotonNetwork.Instantiate (and those have an instantiationId!)
             if (view.instantiationId >= 1)
             {
@@ -2853,6 +2865,7 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
 
     public bool LocalCleanPhotonView(PhotonView view)
     {
+        view.removedFromLocalViewList = true;
         return this.photonViewList.Remove(view.viewID);
     }
 
@@ -3839,12 +3852,12 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
         object sceneId = PhotonNetwork.room.customProperties[NetworkingPeer.CurrentSceneProperty];
         if (sceneId is int)
         {
-            if (Application.loadedLevel != (int)sceneId)
+            if (SceneManagerHelper.ActiveSceneBuildIndex != (int)sceneId)
                 PhotonNetwork.LoadLevel((int)sceneId);
         }
         else if (sceneId is string)
         {
-            if (Application.loadedLevelName != (string)sceneId)
+            if (SceneManagerHelper.ActiveSceneName != (string)sceneId)
                 PhotonNetwork.LoadLevel((string)sceneId);
         }
     }
@@ -3865,11 +3878,11 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
         if (PhotonNetwork.room.customProperties.ContainsKey(NetworkingPeer.CurrentSceneProperty))
         {
             object levelIdInProps = PhotonNetwork.room.customProperties[NetworkingPeer.CurrentSceneProperty];
-            if (levelIdInProps is int && Application.loadedLevel == (int)levelIdInProps)
+            if (levelIdInProps is int && SceneManagerHelper.ActiveSceneBuildIndex == (int)levelIdInProps)
             {
                 return;
             }
-            if (levelIdInProps is string && Application.loadedLevelName.Equals((string)levelIdInProps))
+            if (levelIdInProps is string && SceneManagerHelper.ActiveSceneName != null && SceneManagerHelper.ActiveSceneName.Equals((string)levelIdInProps))
             {
                 return;
             }

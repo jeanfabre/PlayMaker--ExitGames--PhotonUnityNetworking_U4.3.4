@@ -5,7 +5,7 @@ public class RandomMatchmaker : Photon.PunBehaviour
     private PhotonView myPhotonView;
 
     // Use this for initialization
-    void Start()
+    public void Start()
     {
         PhotonNetwork.ConnectUsingSettings("0.1");
     }
@@ -13,6 +13,12 @@ public class RandomMatchmaker : Photon.PunBehaviour
     public override void OnJoinedLobby()
     {
         Debug.Log("JoinRandom");
+        PhotonNetwork.JoinRandomRoom();
+    }
+
+    public override void OnConnectedToMaster()
+    {
+        // when AutoJoinLobby is off, this method gets called when PUN finished the connection (instead of OnJoinedLobby())
         PhotonNetwork.JoinRandomRoom();
     }
 

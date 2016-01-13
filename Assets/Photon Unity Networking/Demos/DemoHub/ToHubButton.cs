@@ -1,5 +1,5 @@
 using UnityEngine;
-using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class ToHubButton : MonoBehaviour
 {
@@ -14,44 +14,52 @@ public class ToHubButton : MonoBehaviour
         {
             if (instance == null)
             {
-                instance = FindObjectOfType(typeof(ToHubButton)) as ToHubButton;
+                instance = FindObjectOfType(typeof (ToHubButton)) as ToHubButton;
             }
 
             return instance;
         }
     }
 
-    void Awake()
+    public void Awake()
     {
         if (Instance != null && Instance != this)
         {
-            Destroy(this.gameObject);
+            Destroy(gameObject);
         }
     }
 
-	// Use this for initialization
-	void Start () 
+    // Use this for initialization
+    public void Start()
     {
-        if (ButtonTexture == null)
+        if (this.ButtonTexture == null)
         {
-            this.gameObject.SetActive(false);
+            gameObject.SetActive(false);
             return;
         }
-	    DontDestroyOnLoad(this.gameObject);
-	}
+        DontDestroyOnLoad(gameObject);
+    }
 
     public void OnGUI()
     {
-        if (Application.loadedLevel != 0)
-        {
-            int w = ButtonTexture.width + 4;
-            int h = ButtonTexture.height + 4;
+        bool sceneZeroLoaded = false;
 
-            ButtonRect = new Rect(Screen.width - w, Screen.height - h, w, h);
-            if (GUI.Button(ButtonRect, ButtonTexture, GUIStyle.none))
+        #if UNITY_5 && !UNITY_5_0 && !UNITY_5_1 && !UNITY_5_2
+        sceneZeroLoaded = SceneManager.GetActiveScene().buildIndex == 0;
+        #else
+        sceneZeroLoaded = Application.loadedLevel == 0;
+        #endif
+
+        if (!sceneZeroLoaded)
+        {
+            int w = this.ButtonTexture.width + 4;
+            int h = this.ButtonTexture.height + 4;
+
+            this.ButtonRect = new Rect(Screen.width - w, Screen.height - h, w, h);
+            if (GUI.Button(this.ButtonRect, this.ButtonTexture, GUIStyle.none))
             {
                 PhotonNetwork.Disconnect();
-                Application.LoadLevel(0);
+                SceneManager.LoadScene(0);
             }
         }
     }

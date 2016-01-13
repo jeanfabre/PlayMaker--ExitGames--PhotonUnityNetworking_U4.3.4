@@ -38,7 +38,6 @@ public class IELdemo : MonoBehaviour
     // This is one of the callback/event methods called by PUN (read more in PhotonNetworkingMessage enumeration)
     public void OnCreatedRoom()
     {
-        Application.LoadLevel(Application.loadedLevel);
     }
 
     #endregion

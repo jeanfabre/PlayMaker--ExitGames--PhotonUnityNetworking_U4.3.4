@@ -95,7 +95,8 @@ public class JumpAndRunMovement : MonoBehaviour
     {
         Vector2 position = new Vector2( transform.position.x, transform.position.y );
 
-        RaycastHit2D hit = Physics2D.Raycast( position, -Vector2.up, 0.1f, 1 << LayerMask.NameToLayer( "Ground" ) );
+        //RaycastHit2D hit = Physics2D.Raycast( position, -Vector2.up, 0.1f, 1 << LayerMask.NameToLayer( "Ground" ) );
+        RaycastHit2D hit = Physics2D.Raycast(position, -Vector2.up, 0.1f);
 
         m_IsGrounded = hit.collider != null;
         m_Animator.SetBool( "IsGrounded", m_IsGrounded );

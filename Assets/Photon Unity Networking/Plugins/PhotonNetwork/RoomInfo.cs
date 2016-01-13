@@ -52,6 +52,7 @@ public class RoomInfo
 
     /// <summary>Read-only "cache" of custom properties of a room. Set via Room.SetCustomProperties (not available for RoomInfo class!).</summary>
     /// <remarks>All keys are string-typed and the values depend on the game/application.</remarks>
+    /// <see cref="Room.SetCustomProperties"/>
     public Hashtable customProperties
     {
         get
@@ -139,7 +140,7 @@ public class RoomInfo
     /// <param name="properties"></param>
     protected internal RoomInfo(string roomName, Hashtable properties)
     {
-        this.CacheProperties(properties);
+        this.InternalCacheProperties(properties);
 
         this.nameField = roomName;
     }
@@ -178,7 +179,7 @@ public class RoomInfo
 
     /// <summary>Copies "well known" properties to fields (isVisible, etc) and caches the custom properties (string-keys only) in a local hashtable.</summary>
     /// <param name="propertiesToCache">New or updated properties to store in this RoomInfo.</param>
-    protected internal void CacheProperties(Hashtable propertiesToCache)
+    protected internal void InternalCacheProperties(Hashtable propertiesToCache)
     {
         if (propertiesToCache == null || propertiesToCache.Count == 0 || this.customPropertiesField.Equals(propertiesToCache))
         {
