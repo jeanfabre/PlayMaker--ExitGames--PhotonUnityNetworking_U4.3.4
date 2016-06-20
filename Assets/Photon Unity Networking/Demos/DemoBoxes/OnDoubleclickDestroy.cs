@@ -7,13 +7,13 @@ public class OnDoubleclickDestroy : Photon.MonoBehaviour
 
 
     // called by InputToEvent.
-    // we use a short timeout to detect double clicks. 
+    // we use a short timeout to detect double clicks.
     // on double click, the networked object gets destroyed (on all clients).
     private void OnClick()
     {
-        if (!this.networkView.isMine)
+        if (!this.photonView.isMine)
         {
-            // this networkView (provided by Photon.MonoBehaviour) says the object is not ours. 
+            // this networkView (provided by Photon.MonoBehaviour) says the object is not ours.
             // so this client can't destroy it.
             return;
         }

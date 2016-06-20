@@ -11,6 +11,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using SupportClassPun = ExitGames.Client.Photon.SupportClass;
 
 #if UNITY_WEBGL
 
@@ -136,7 +137,7 @@ namespace ExitGames.Client.Photon
             {
                 if (this.ReportDebugOfLevel(DebugLevel.ALL))
                 {
-                    this.Listener.DebugReturn(DebugLevel.ALL, "Sending: " + SupportClass.ByteArrayToString(data));
+                    this.Listener.DebugReturn(DebugLevel.ALL, "Sending: " + SupportClassPun.ByteArrayToString(data));
                 }
                 this.sock.Send(data);
             }
@@ -200,7 +201,7 @@ namespace ExitGames.Client.Photon
 
 						if (this.ReportDebugOfLevel(DebugLevel.ALL))
 						{
-							this.Listener.DebugReturn(DebugLevel.ALL, "TCP << " + inBuff.Length + " = " + SupportClass.ByteArrayToString(inBuff));
+							this.Listener.DebugReturn(DebugLevel.ALL, "TCP << " + inBuff.Length + " = " + SupportClassPun.ByteArrayToString(inBuff));
 						}
 
 

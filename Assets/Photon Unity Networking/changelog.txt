@@ -1,3 +1,59 @@
+v1.69 (19. May 2016)
+Updated: Rock Paper Scissors Demo Scene, featuring fixes for timing and turn management, and implementation of a progress bar to indicate timer
+Updated: PUN+ native socket library for Unity 4.7 iOS to support IPv6.
+
+
+v1.68 (3. May 2016)
+Fixed: The "reset" action of a PhotonTransformView-inspector now works as expected and sets proper, useful default values.
+Fixed: PhotonAnimatorView. Layers in Unity 4 where not counted properly, it now lists layers properly.
+Fixed: Buffered RPCs can be removed (as expected) from the buffer with RemoveRPCs(). Affected versions were v1.66 and v1.67. Please update those.
+Updated: The docs (.chm and .pdf).
+
+v1.67 (21. April 2016)
+Fixed: PhotonAnimatorView, Triggers now supported
+Added: PhotonAnimatorView, Live view in Inspector of current Values for parameters
+Fixed: Photon Chat for WebGL export. It failed to compile because SocketWebTcp was not found. The PhotonChatApi folder now got moved from Assets\Plugins to Assets.
+Changed: If sent by server, UserId and Nickname values are updated (with the server's values). This can be done with CustomAuthentication. All clients always get some UserId assigned by the server (if you didn't set one in the first place).
+Added: "Slot Reservation" as feature for matchmaking. 
+Added: ExpectedUsers parameter in PhotonNetwork methods: CreateRoom, JoinRoom and JoinOrCreateRoom.
+Added: Room.expectedUsers. List of users who are expected to join this room. In matchmaking these UserIDs block a slot out of the MaxPlayers.
+Added: RoomOptions.publishUserId. This tells the server to publish the UserIds of players in a room. You can use those in FindFriends or when you join/create another room, to reserve slots for other players.
+Added: PhotonPlayer.userId. If the server publishes the UserIds of players, you can access the UserId here while being in a room with others.
+Internal: Added GamePropertyKey.ExpectedUsers (247) and ParameterCode.NickName (202).
+Added: PhotonNetwork.StartRpcsAsCoroutine as optional performance improvement. If set to false, PUN will not attempt to start and RPCs as coroutine. While coroutines are efficient, starting them needlessly is not the best approach either. This defaults to true, which means RPC methods get started as coroutine, if they return IEnumerator.
+Changed: Internal handling of RPC methods. Now their parameter list is being cached, instead being fetched every time we have to find an RPC. This uses a limited amount of memory to improve speed of RPCs. To do this elegantly, we extended MethodInfo with a GetCachedParemeters() method.
+Changed: AccountService is now wrapped in "#if UNITY_EDITOR" to avoid export to any players.
+Added: RoomOptions.PlayerTtl, which can be used when creating a room. If set, a player who disconnects becomes inactive for the defined time, instead of being removed from the players list. This allows the player to join a room. It blocks the player's slot in the room in matchmaking, too.
+Added: PhotonPlayer.isInactive. If a Player Time To Live is set, players can become inactive in a room. The PhotonPlayer instance is still present, as if the player were connected.
+Added: A client which lost connection, can now rejoin a room quite easily with PhotonNetwork.ReJoinRoom(string roomName). Important: To enable this, a room must have a PlayerTtl != 0 and the client which is rejoining, must use the same UserID as before.
+Fixed: The State of a client when it fails to join/create a room on the Master Server. It's now set correctly to either PeerState.JoinedLobby or PeerState.ConnectedToMaster (depending on whether the client was in a lobby or not).
+Fixed: The "Open Dashboard" button in the PUN Wizard, which was not working on OSx.
+Updated: Usage of EditorUtility.SetDirty() and Undo.RecordObject() in Editor scripts according to Unity 5.3 changes. This should enable undo in most Inspector windows, too.
+Changed: PhotonNetwork.BackgroundTimeout no longer calls Disconnect() directly. Instead a normal timeout period is granted after the BackgroundTimeout elapsed. PUN will use the common timeout callbacks (when the app gets active again). 
+Changed: PhotonNetwork.BackgroundTimeout now defaults to 60 seconds. This keeps all new apps from being connected for longer times in background but allows loading lots of assets and taking short calls, etc.
+Changed: Usage of SupportClass is now SupportClassPun to avoid clashes with IL2CPP on some platforms.
+Added: RoomOptions.plugins to define which server-side plugins are expected. This is a feature of the Enterprise Cloud and when using the Photon Server SDK (so it's not available in the Public Cloud).
+Added: Handling of an "Info Event", which could be used by server-side plugins. EventCode.ErrorInfo is code 251 and PUN will call the delegate you defined in PhotonNetwork.OnEventCall (or log a warning that no delegate was set). This only applies to customized servers (not the Public Cloud).
+Added: PhotonNetwork.ReconnectAndRejoin() to be used when a client loses connection while in a room (e.g. when you press the lock button on iOS and then return to the app). 
+Added: PhotonNetwork.Reconnect() to be used when a client lost connection. Use this only when your client was connected to a region or a game before (to get into the same region).
+Fixed: A compile warning about Photon.MonoBehaviour.networkView "does not hide an inherited member" in Unity 5.3.4 and up. The old networking API of Unity is being removed, it seems.
+Fixed: PhotonNetwork.time for offline mode. Internal: It now uses the Environment.TickCount, which is similar to the server's timestamps. All usage of time in PUN is now either based on PhotonNetwork.time or .ServerTimestamp.
+
+v1.66 (21. January 2016)
+Important: This might affect your import! The folder "ChatApi" is now renamed to "PhotonChatApi". This way, the folder uses the same name as in our other packages. Remove the "ChatApi" folder, if the import didn't do that for you!
+Added: Callback OnCustomAuthenticationResponse to make the data available, that could be sent by a custom authentication server. See description in PunBehaviour.
+Fixed: Usage of "networkView" (old Unity Networking) to using photonView (PUN naming) in a script of the Boxes Demo.
+Changed: The photonView in Photon.MonoBehaviour is now cached. If you intend to remove a PhotonView from a GameObject without destroying that object, you should modify this accordingly.
+Changed: Internally, the PhotonStream now has a object[] for read values. This avoids wrapping them in a List<object>, which saves memory and time.
+Added: Support for Enum types in RPC methods. Enums that are based of byte, short or int can now be used as parameters in RPCs. The underlying type has to be serializable by PUN for that.
+Internal: CheckTypeMatch() to match "assignable" types to enum values. This is what enables the support for using Enum types in RPCs as parameter.
+Fixed: Several scripts in the Demo Synchronization. They now work more like you'd expect. The whole demo is refreshed to a more useful state.
+Internal: Refactored RPCs and "Synchronization" updates to waste far less memory and perform better. For that, Hashtables were replaced with simpler object[]. This means, that this client version is completely incompatible with older ones.
+Internal: The PhotonStream now has 3 values pre-set. Those are needed in the stream to be sent along with your custom values. This doesn't change anything usage-wise. It also has a object[] which is used for readin values and a List<object> which is used when you write. This is leaner.
+Internal: PhotonView.ExecuteComponentOnSerialize() now makes better use of its cache Dictionary. It fetches cached methods with TryFetchValue(), instead of checking for content, then accessing it.
+Fixed: PhotonTransformView interpolation for "estimated speed". It was way too slow, because it didn't factor in that there are 10 updates per second. So speed as a value per second is 10 times higher. 10 being the default send rate here. Note that the object can overshoot (the actual position due to this and extrapolation).
+Fixed: PhotonTransformView interpolation for "estimated speed" now avoids jitter when joining a game. The initial received position simply defines where the object is (after being instantiated at the position of it's Instantiate message). With the next update, it can begin to move.
+
 v1.65 (16. December 2015)
 Fixed: Potential NullReference Exception when transfering ownership. The PhotonView which gets transfered might get destroyed before the transfer is complete and that case is now handled.
 Fixed: PUN Wizard for Unity 5, which incorrectly pointed out that you need PUN+ to export to iOS or Android. This was the case in Unity 4 but it's no longer true. Removed this note.
@@ -6,7 +62,6 @@ Fixed: Compatibility with Unity 5.3. The new SceneManager class is re-implemente
 Added: Useful component to select a color per player (out of a configurable list of available colors). Check out: ColorPerPlayer.
 Updated: Boxes Demo. This demo now uses the ColorPerPlayer and ColorPerPlayerApply scripts to colorize each player's cubes. Also, it shows more clearly how RPCs work. There are more tips at runtime, too.
 Fixed: Friends And Custom Authentication Demo. A script was waiting for the client to join the lobby, which isn't done anymore by default. Now the UI is fixed to show when connected to the Master Server, where FindFriend() can be called.
-
 
 v1.64.2 (6. November 2015)
 Fixed: SetCustomProperties in PhotonPlayer and Room classes. It applies set properties locally, unless you do a server-side Check and Swap with expected properties. It also does the callbacks as before (CAS delays the callback by one roundtrip, as the server sets it). In OfflineMode, CAS gets ignored but props stored.

@@ -159,6 +159,18 @@ public class Room : RoomInfo
         }
     }
 
+    /// <summary>
+    /// List of users who are expected to join this room. In matchmaking, Photon blocks a slot for each of these UserIDs out of the MaxPlayers.
+    /// </summary>
+    /// <remarks>
+    /// The corresponding feature in Photon is called "Slot Reservation" and can be found in the doc pages.
+    /// Define expected players in the PhotonNetwork methods: CreateRoom, JoinRoom and JoinOrCreateRoom.
+    /// </remarks>
+    public string[] expectedUsers
+    {
+        get { return this.expectedUsersField; }
+    }
+
 	/// <summary>The ID (actorNumber) of the current Master Client of this room.</summary>
     /// <remarks>See also: PhotonNetwork.masterClient.</remarks>
     protected internal int masterClientId
@@ -281,6 +293,24 @@ public class Room : RoomInfo
         PhotonNetwork.networkingPeer.OpSetPropertiesOfRoom(customProps, expectedProperties: null, webForward: false);
 
         this.propertiesListedInLobby = propsListedInLobby;
+    }
+
+    /// <summary>
+    /// Attempts to remove all current expected users from the server's Slot Reservation list.
+    /// </summary>
+    /// <remarks>
+    /// Note that this operation can conflict with new/other users joining. They might be
+    /// adding users to the list of expected users before or after this client called ClearExpectedUsers.
+    /// 
+    /// This room's expectedUsers value will update, when the server sends a successful update.
+    /// 
+    /// Internals: This methods wraps up setting the ExpectedUsers property of a room.
+    /// </remarks>
+    public void ClearExpectedUsers()
+    {
+        Hashtable props = new Hashtable();
+        props[GamePropertyKey.ExpectedUsers] = null;
+        PhotonNetwork.networkingPeer.OpSetPropertiesOfRoom(props, expectedProperties: null, webForward: false);
     }
 
 

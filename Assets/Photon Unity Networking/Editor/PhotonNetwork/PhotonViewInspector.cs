@@ -64,7 +64,12 @@ public class PhotonViewInspector : Editor
 
         // ownership requests
         EditorGUI.BeginDisabledGroup(Application.isPlaying);
-        m_Target.ownershipTransfer = (OwnershipOption) EditorGUILayout.EnumPopup(m_Target.ownershipTransfer, GUILayout.Width(100));
+        OwnershipOption own = (OwnershipOption)EditorGUILayout.EnumPopup(m_Target.ownershipTransfer, GUILayout.Width(100));
+        if (own != m_Target.ownershipTransfer)
+        {
+            Undo.RecordObject(m_Target, "Change PhotonView Ownership Transfer");
+            m_Target.ownershipTransfer = own;
+        }
         EditorGUI.EndDisabledGroup();
 
         EditorGUILayout.EndHorizontal();
@@ -82,7 +87,11 @@ public class PhotonViewInspector : Editor
         else
         {
             int idValue = EditorGUILayout.IntField("View ID [1.." + (PhotonNetwork.MAX_VIEW_IDS - 1) + "]", m_Target.viewID);
-            m_Target.viewID = idValue;
+            if (m_Target.viewID != idValue)
+            {
+                Undo.RecordObject(m_Target, "Change PhotonView viewID");
+                m_Target.viewID = idValue;
+            }
         }
 
 
@@ -133,7 +142,9 @@ public class PhotonViewInspector : Editor
         // Cleanup: save and fix look
         if (GUI.changed)
         {
+            #if !UNITY_MIN_5_3
             EditorUtility.SetDirty(m_Target);
+            #endif
             PhotonViewHandler.HierarchyChange(); // TODO: check if needed
         }
 
@@ -184,6 +195,7 @@ public class PhotonViewInspector : Editor
 
         if (m_Target.observed != null)
         {
+            Undo.RecordObject(m_Target, null);
             if (m_Target.ObservedComponents.Contains(m_Target.observed) == false)
             {
                 bool wasAdded = false;
@@ -204,7 +216,9 @@ public class PhotonViewInspector : Editor
             }
 
             m_Target.observed = null;
+            #if !UNITY_MIN_5_3
             EditorUtility.SetDirty(m_Target);
+            #endif
         }
     }
 
@@ -331,15 +345,21 @@ public class PhotonViewInspector : Editor
 
         if (wasObservedComponentsEmpty == true && isObservedComponentsEmpty == false && m_Target.synchronization == ViewSynchronization.Off)
         {
+            Undo.RecordObject(m_Target, "Change PhotonView");
             m_Target.synchronization = ViewSynchronization.UnreliableOnChange;
+            #if !UNITY_MIN_5_3
             EditorUtility.SetDirty(m_Target);
+            #endif
             serializedObject.Update();
         }
 
         if (wasObservedComponentsEmpty == false && isObservedComponentsEmpty == true)
         {
+            Undo.RecordObject(m_Target, "Change PhotonView");
             m_Target.synchronization = ViewSynchronization.Off;
+            #if !UNITY_MIN_5_3
             EditorUtility.SetDirty(m_Target);
+            #endif
             serializedObject.Update();
         }
     }

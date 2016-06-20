@@ -30,6 +30,7 @@ using ExitGames.Client.Photon;
 using UnityEngine;
 
 using Hashtable = ExitGames.Client.Photon.Hashtable;
+using SupportClassPun = ExitGames.Client.Photon.SupportClass;
 
 
 /// <summary>Defines the OnPhotonSerializeView method to make it easy to implement correctly for observable scripts.</summary>
@@ -336,6 +337,20 @@ public interface IPunCallbacks
     void OnCustomAuthenticationFailed(string debugMessage);
 
     /// <summary>
+    /// Called when your Custom Authentication service responds with additional data.
+    /// </summary>
+    /// <remarks>
+    /// Custom Authentication services can include some custom data in their response.
+    /// When present, that data is made available in this callback as Dictionary.
+    /// While the keys of your data have to be strings, the values can be either string or a number (in Json).
+    /// You need to make extra sure, that the value type is the one you expect. Numbers become (currently) int64.
+    ///
+    /// Example: void OnCustomAuthenticationResponse(Dictionary&lt;string, object&gt; data) { ... }
+    /// </remarks>
+    /// <see cref="https://doc.photonengine.com/en/realtime/current/reference/custom-authentication"/>
+    void OnCustomAuthenticationResponse(Dictionary<string, object> data);
+
+    /// <summary>
     /// Called by PUN when the response to a WebRPC is available. See PhotonNetwork.WebRPC.
     /// </summary>
     /// <remarks>
@@ -426,14 +441,29 @@ namespace Photon
     /// </summary>
     public class MonoBehaviour : UnityEngine.MonoBehaviour
     {
+        /// <summary>Cache field for the PhotonView on this GameObject.</summary>
+        private PhotonView pvCache = null;
+
+        /// <summary>A cached reference to a PhotonView on this GameObject.</summary>
+        /// <remarks>
+        /// If you intend to work with a PhotonView in a script, it's usually easier to write this.photonView.
+        ///
+        /// If you intend to remove the PhotonView component from the GameObject but keep this Photon.MonoBehaviour,
+        /// avoid this reference or modify this code to use PhotonView.Get(obj) instead.
+        /// </remarks>
         public PhotonView photonView
         {
             get
             {
-                return PhotonView.Get(this);
+                if (pvCache == null)
+                {
+                    pvCache = PhotonView.Get(this);
+                }
+                return pvCache;
             }
         }
 
+        #if !UNITY_MIN_5_3
         /// <summary>
         /// This property is only here to notify developers when they use the outdated value.
         /// </summary>
@@ -447,6 +477,7 @@ namespace Photon
         /// #endif
         /// public PhotonView networkView
         /// </remarks>
+        [Obsolete("Use a photonView")]
         new public PhotonView networkView
         {
             get
@@ -455,6 +486,7 @@ namespace Photon
                 return PhotonView.Get(this);
             }
         }
+        #endif
     }
 
 
@@ -774,6 +806,22 @@ namespace Photon
         }
 
         /// <summary>
+        /// Called when your Custom Authentication service responds with additional data.
+        /// </summary>
+        /// <remarks>
+        /// Custom Authentication services can include some custom data in their response.
+        /// When present, that data is made available in this callback as Dictionary.
+        /// While the keys of your data have to be strings, the values can be either string or a number (in Json).
+        /// You need to make extra sure, that the value type is the one you expect. Numbers become (currently) int64.
+        ///
+        /// Example: void OnCustomAuthenticationResponse(Dictionary&lt;string, object&gt; data) { ... }
+        /// </remarks>
+        /// <see cref="https://doc.photonengine.com/en/realtime/current/reference/custom-authentication"/>
+        public virtual void OnCustomAuthenticationResponse(Dictionary<string, object> data)
+        {
+        }
+
+        /// <summary>
         /// Called by PUN when the response to a WebRPC is available. See PhotonNetwork.WebRPC.
         /// </summary>
         /// <remarks>
@@ -894,11 +942,9 @@ public class RoomOptions
     /// <summary>Max number of players that can be in the room at any time. 0 means "no limit".</summary>
     public byte maxPlayers;
 
-    /// <summary>Time To Live (TTL) for an 'actor' in a room. If a client disconnects, this actor is inactive first and removed after this timeout. In milliseconds.</summary>
-    // public int PlayerTtl;
 
-    /// <summary>Time To Live (TTL) for a room when the last player leaves. Keeps room in memory for case a player re-joins soon. In milliseconds.</summary>
-    // public int EmptyRoomTtl;
+    /// <summary>Time To Live (TTL) for an 'actor' in a room. If a client disconnects, this actor is inactive first and removed after this timeout. In milliseconds.</summary>
+    public int PlayerTtl;
 
 
     /// <summary>Time To Live (TTL) for a room when the last player leaves. Keeps room in memory for case a player re-joins soon. In milliseconds.</summary>
@@ -939,6 +985,14 @@ public class RoomOptions
     /// </remarks>
     public string[] customRoomPropertiesForLobby = new string[0];
 
+    /// <summary>Informs the server of the expected plugin setup.</summary>
+    /// <remarks>
+    /// The operation will fail in case of a plugin missmatch returning error code PluginMismatch 32757(0x7FFF - 10).
+    /// Setting string[]{} means the client expects no plugin to be setup.
+    /// Note: for backwards compatibility null omits any check.
+    /// </remarks>
+    public string[] plugins;
+
     /// <summary>
     /// Tells the server to skip room events for joining and leaving players.
     /// </summary>
@@ -952,12 +1006,16 @@ public class RoomOptions
     public bool suppressRoomEvents { get { return this.suppressRoomEventsField; } /*set { this.suppressRoomEventsField = value; }*/ }
     private bool suppressRoomEventsField = false;
 
-
-    ///// <summary>
-    ///// Defines if the UserIds of players get "published" in the room. Useful for FindFriends, if players want to play another game together.
-    ///// </summary>
-    //public bool publishUserId { get { return this.publishUserIdField; } set { this.publishUserIdField = value; } }
-    //private bool publishUserIdField = false;
+    /// <summary>
+    /// Defines if the UserIds of players get "published" in the room. Useful for FindFriends, if players want to play another game together.
+    /// </summary>
+    /// <remarks>
+    /// When you set this to true, Photon will publish the UserIds of the players in that room.
+    /// In that case, you can use PhotonPlayer.userId, to access any player's userID.
+    /// This is useful for FindFriends and to set "expected users" to reserve slots in a room (see PhotonNetwork.JoinRoom e.g.).
+    /// </remarks>
+    public bool publishUserId { get { return this.publishUserIdField; } set { this.publishUserIdField = value; } }
+    private bool publishUserIdField = false;
 }
 
 
@@ -1083,8 +1141,9 @@ internal class PunEvent
 public class PhotonStream
 {
     bool write = false;
-    internal List<object> data;
-    byte currentItem = 0; //Used to track the next item to receive.
+    private Queue<object> writeData;
+    private object[] readData;
+    internal byte currentItem = 0; //Used to track the next item to receive.
 
     /// <summary>
     /// Creates a stream and initializes it. Used by PUN internally.
@@ -1094,12 +1153,17 @@ public class PhotonStream
         this.write = write;
         if (incomingData == null)
         {
-            this.data = new List<object>();
+            this.writeData = new Queue<object>(10);
         }
         else
         {
-            this.data = new List<object>(incomingData);
+            this.readData = incomingData;
         }
+    }
+
+    internal void ResetWriteStream()
+    {
+        writeData.Clear();
     }
 
     /// <summary>If true, this client should add data to the stream to send it.</summary>
@@ -1119,7 +1183,7 @@ public class PhotonStream
     {
         get
         {
-            return data.Count;
+            return (this.isWriting) ? this.writeData.Count : this.readData.Length;
         }
     }
 
@@ -1132,7 +1196,7 @@ public class PhotonStream
             return null;
         }
 
-        object obj = this.data[this.currentItem];
+        object obj = this.readData[this.currentItem];
         this.currentItem++;
         return obj;
     }
@@ -1146,7 +1210,7 @@ public class PhotonStream
             return null;
         }
 
-        object obj = this.data[this.currentItem];
+        object obj = this.readData[this.currentItem];
         //this.currentItem++;
         return obj;
     }
@@ -1160,13 +1224,13 @@ public class PhotonStream
             return;
         }
 
-        this.data.Add(obj);
+        this.writeData.Enqueue(obj);
     }
 
     /// <summary>Turns the stream into a new object[].</summary>
     public object[] ToArray()
     {
-        return this.data.ToArray();
+        return this.isWriting ? this.writeData.ToArray() : this.readData;
     }
 
     /// <summary>
@@ -1176,13 +1240,13 @@ public class PhotonStream
     {
         if (this.write)
         {
-            this.data.Add(myBool);
+            this.writeData.Enqueue(myBool);
         }
         else
         {
-            if (this.data.Count > currentItem)
+            if (this.readData.Length > currentItem)
             {
-                myBool = (bool)data[currentItem];
+                myBool = (bool)this.readData[currentItem];
                 this.currentItem++;
             }
         }
@@ -1195,13 +1259,13 @@ public class PhotonStream
     {
         if (write)
         {
-            this.data.Add(myInt);
+            this.writeData.Enqueue(myInt);
         }
         else
         {
-            if (this.data.Count > currentItem)
+            if (this.readData.Length > currentItem)
             {
-                myInt = (int)data[currentItem];
+                myInt = (int)this.readData[currentItem];
                 currentItem++;
             }
         }
@@ -1214,13 +1278,13 @@ public class PhotonStream
     {
         if (write)
         {
-            this.data.Add(value);
+            this.writeData.Enqueue(value);
         }
         else
         {
-            if (this.data.Count > currentItem)
+            if (this.readData.Length > currentItem)
             {
-                value = (string)data[currentItem];
+                value = (string)this.readData[currentItem];
                 currentItem++;
             }
         }
@@ -1233,13 +1297,13 @@ public class PhotonStream
     {
         if (write)
         {
-            this.data.Add(value);
+            this.writeData.Enqueue(value);
         }
         else
         {
-            if (this.data.Count > currentItem)
+            if (this.readData.Length > currentItem)
             {
-                value = (char)data[currentItem];
+                value = (char)this.readData[currentItem];
                 currentItem++;
             }
         }
@@ -1252,13 +1316,13 @@ public class PhotonStream
     {
         if (write)
         {
-            this.data.Add(value);
+            this.writeData.Enqueue(value);
         }
         else
         {
-            if (this.data.Count > currentItem)
+            if (this.readData.Length > currentItem)
             {
-                value = (short)data[currentItem];
+                value = (short)this.readData[currentItem];
                 currentItem++;
             }
         }
@@ -1271,13 +1335,13 @@ public class PhotonStream
     {
         if (write)
         {
-            this.data.Add(obj);
+            this.writeData.Enqueue(obj);
         }
         else
         {
-            if (this.data.Count > currentItem)
+            if (this.readData.Length > currentItem)
             {
-                obj = (float)data[currentItem];
+                obj = (float)this.readData[currentItem];
                 currentItem++;
             }
         }
@@ -1290,13 +1354,13 @@ public class PhotonStream
     {
         if (write)
         {
-            this.data.Add(obj);
+            this.writeData.Enqueue(obj);
         }
         else
         {
-            if (this.data.Count > currentItem)
+            if (this.readData.Length > currentItem)
             {
-                obj = (PhotonPlayer)data[currentItem];
+                obj = (PhotonPlayer)this.readData[currentItem];
                 currentItem++;
             }
         }
@@ -1309,13 +1373,13 @@ public class PhotonStream
     {
         if (write)
         {
-            this.data.Add(obj);
+            this.writeData.Enqueue(obj);
         }
         else
         {
-            if (this.data.Count > currentItem)
+            if (this.readData.Length > currentItem)
             {
-                obj = (Vector3)data[currentItem];
+                obj = (Vector3)this.readData[currentItem];
                 currentItem++;
             }
         }
@@ -1328,13 +1392,13 @@ public class PhotonStream
     {
         if (write)
         {
-            this.data.Add(obj);
+            this.writeData.Enqueue(obj);
         }
         else
         {
-            if (this.data.Count > currentItem)
+            if (this.readData.Length > currentItem)
             {
-                obj = (Vector2)data[currentItem];
+                obj = (Vector2)this.readData[currentItem];
                 currentItem++;
             }
         }
@@ -1347,13 +1411,13 @@ public class PhotonStream
     {
         if (write)
         {
-            this.data.Add(obj);
+            this.writeData.Enqueue(obj);
         }
         else
         {
-            if (this.data.Count > currentItem)
+            if (this.readData.Length > currentItem)
             {
-                obj = (Quaternion)data[currentItem];
+                obj = (Quaternion)this.readData[currentItem];
                 currentItem++;
             }
         }
@@ -1512,7 +1576,7 @@ public class WebRpcResponse
     /// <returns>String resembling the result.</returns>
     public string ToStringFull()
     {
-        return string.Format("{0}={2}: {1} \"{3}\"", Name, SupportClass.DictionaryToString(Parameters), ReturnCode, DebugMessage);
+        return string.Format("{0}={2}: {1} \"{3}\"", Name, SupportClassPun.DictionaryToString(Parameters), ReturnCode, DebugMessage);
     }
 }
 

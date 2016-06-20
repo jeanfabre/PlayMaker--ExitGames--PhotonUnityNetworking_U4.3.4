@@ -1,3 +1,13 @@
+// ----------------------------------------------------------------------------
+// <copyright file="ServerSettingsInspector.cs" company="Exit Games GmbH">
+//   PhotonNetwork Framework for Unity - Copyright (C) 2016 Exit Games GmbH
+// </copyright>
+// <summary>
+//   This is a custom editor for the ServerSettings scriptable object.
+// </summary>
+// <author>developer@exitgames.com</author>
+// ----------------------------------------------------------------------------
+
 using System;
 using ExitGames.Client.Photon;
 using UnityEditor;
@@ -19,7 +29,7 @@ public class ServerSettingsInspector : Editor
     public override void OnInspectorGUI()
     {
         ServerSettings settings = (ServerSettings) target;
-
+        Undo.RecordObject(settings, "Edit PhotonServerSettings");
 
         settings.HostType = (ServerSettings.HostingOption) EditorGUILayout.EnumPopup("Hosting", settings.HostType);
         EditorGUI.indentLevel = 1;
@@ -176,7 +186,7 @@ public class ServerSettingsInspector : Editor
 
         if (GUI.changed)
         {
-            EditorUtility.SetDirty(target);
+            EditorUtility.SetDirty(target);     // even in Unity 5.3+ it's OK to SetDirty() for non-scene objects. 
         }
     }
 

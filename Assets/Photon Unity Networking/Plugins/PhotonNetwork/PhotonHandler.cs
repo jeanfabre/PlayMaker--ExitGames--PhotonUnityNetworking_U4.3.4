@@ -11,6 +11,7 @@ using ExitGames.Client.Photon;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
+using SupportClassPun = ExitGames.Client.Photon.SupportClass;
 
 
 /// <summary>
@@ -76,12 +77,11 @@ internal class PhotonHandler : Photon.MonoBehaviour
             {
                 timerToStopConnectionInBackground = new Stopwatch();
             }
+            timerToStopConnectionInBackground.Reset();
 
             if (pause)
             {
-                timerToStopConnectionInBackground.Reset();
                 timerToStopConnectionInBackground.Start();
-
             }
             else
             {
@@ -176,7 +176,7 @@ internal class PhotonHandler : Photon.MonoBehaviour
         }
 
         sendThreadShouldRun = true;
-        SupportClass.CallInBackground(FallbackSendAckThread);   // thread will call this every 100ms until method returns false
+        SupportClassPun.CallInBackground(FallbackSendAckThread);   // thread will call this every 100ms until method returns false
 #endif
     }
 
@@ -191,20 +191,16 @@ internal class PhotonHandler : Photon.MonoBehaviour
     {
         if (sendThreadShouldRun && PhotonNetwork.networkingPeer != null)
         {
-            PhotonNetwork.networkingPeer.SendAcksOnly();
-
             // check if the client should disconnect after some seconds in background
             if (timerToStopConnectionInBackground != null && PhotonNetwork.BackgroundTimeout > 0.001f)
             {
-                if (timerToStopConnectionInBackground.ElapsedMilliseconds > PhotonNetwork.BackgroundTimeout*1000)
+                if (timerToStopConnectionInBackground.ElapsedMilliseconds > PhotonNetwork.BackgroundTimeout * 1000)
                 {
-                    timerToStopConnectionInBackground.Stop();
-                    timerToStopConnectionInBackground.Reset();
-
-                    PhotonNetwork.Disconnect();
                     return sendThreadShouldRun;
                 }
             }
+
+            PhotonNetwork.networkingPeer.SendAcksOnly();
         }
 
         return sendThreadShouldRun;

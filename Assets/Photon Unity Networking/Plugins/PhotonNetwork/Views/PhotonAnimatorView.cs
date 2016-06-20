@@ -1,4 +1,14 @@
-﻿using System.Collections.Generic;
+﻿// ----------------------------------------------------------------------------
+// <copyright file="PhotonAnimatorView.cs" company="Exit Games GmbH">
+//   PhotonNetwork Framework for Unity - Copyright (C) 2016 Exit Games GmbH
+// </copyright>
+// <summary>
+//   Component to synchronize Mecanim animations via PUN.
+// </summary>
+// <author>developer@exitgames.com</author>
+// ----------------------------------------------------------------------------
+ 
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -6,6 +16,10 @@ using UnityEngine;
 /// Simply add the component to your GameObject and make sure that
 /// the PhotonAnimatorView is added to the list of observed components
 /// </summary>
+/// <remarks>
+/// When Using Trigger Parameters, make sure the component that sets the trigger is higher in the stack of Components on the GameObject than 'PhotonAnimatorView'
+/// Triggers are raised true during one frame only.
+/// </remarks>
 [RequireComponent(typeof (Animator))]
 [RequireComponent(typeof (PhotonView))]
 [AddComponentMenu("Photon Networking/Photon Animator View")]
@@ -98,7 +112,7 @@ public class PhotonAnimatorView : MonoBehaviour
 
     private void Update()
     {
-        if (this.m_PhotonView.isMine == false && PhotonNetwork.connected == true)
+		if (this.m_Animator.applyRootMotion && this.m_PhotonView.isMine == false && PhotonNetwork.connected == true)
         {
             this.m_Animator.applyRootMotion = false;
         }
@@ -281,12 +295,13 @@ public class PhotonAnimatorView : MonoBehaviour
                         this.m_StreamQueue.SendNext(this.m_Animator.GetInteger(parameter.Name));
                         break;
                     case ParameterType.Trigger:
-
-                        break;
-                }
+						this.m_StreamQueue.SendNext(this.m_Animator.GetBool(parameter.Name));
+						break;
+				}
             }
         }
     }
+
 
     private void DeserializeDataContinuously()
     {
@@ -321,7 +336,7 @@ public class PhotonAnimatorView : MonoBehaviour
                         this.m_Animator.SetInteger(parameter.Name, (int)this.m_StreamQueue.ReceiveNext());
                         break;
                     case ParameterType.Trigger:
-
+						this.m_Animator.SetBool(parameter.Name, (bool)this.m_StreamQueue.ReceiveNext());
                         break;
                 }
             }
@@ -356,8 +371,8 @@ public class PhotonAnimatorView : MonoBehaviour
                         stream.SendNext(this.m_Animator.GetInteger(parameter.Name));
                         break;
                     case ParameterType.Trigger:
-
-                        break;
+						stream.SendNext(this.m_Animator.GetBool (parameter.Name));
+						break;
                 }
             }
         }
@@ -386,7 +401,6 @@ public class PhotonAnimatorView : MonoBehaviour
                         {
                             return;
                         }
-
                         this.m_Animator.SetBool(parameter.Name, (bool)stream.ReceiveNext());
                         break;
                     case ParameterType.Float:
@@ -405,8 +419,16 @@ public class PhotonAnimatorView : MonoBehaviour
 
                         this.m_Animator.SetInteger(parameter.Name, (int)stream.ReceiveNext());
                         break;
-                    case ParameterType.Trigger:
+		            case ParameterType.Trigger:
+							if (stream.PeekNext() is bool == false)
+							{
+								return;
+							}
 
+							if ((bool)stream.ReceiveNext())
+							  	{
+								this.m_Animator.SetTrigger(parameter.Name);
+							}
                         break;
                 }
             }

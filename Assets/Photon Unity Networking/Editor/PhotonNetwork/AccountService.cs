@@ -9,6 +9,7 @@
 // <author>developer@exitgames.com</author>
 // ----------------------------------------------------------------------------
 
+#if UNITY_EDITOR
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 
@@ -207,3 +208,4 @@ public class AccountService
         }
     }
 }
+#endif

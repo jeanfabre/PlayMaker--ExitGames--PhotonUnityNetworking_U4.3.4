@@ -1,37 +1,30 @@
-using UnityEngine;
-using Hashtable = ExitGames.Client.Photon.Hashtable;
+//
+// A (very) simple network interpolation script, using Lerp().
+//
+// This will lag-behind, compared to the moving cube on the controlling client.
+// Actually, we deliberately lag behing a bit more, to avoid stops, if updates arrive late.
+//
+// This script does not hide loss very well and might stop the local cube.
+//
 
-[RequireComponent(typeof(PhotonView))]
-public class CubeLerp : Photon.MonoBehaviour
+using UnityEngine;
+
+
+[RequireComponent(typeof (PhotonView))]
+public class CubeLerp : Photon.MonoBehaviour, IPunObservable
 {
     private Vector3 latestCorrectPos;
     private Vector3 onUpdatePos;
     private float fraction;
 
 
-    public void Awake()
+    public void Start()
     {
-        if (photonView.isMine)
-        {
-            this.enabled = false;   // due to this, Update() is not called on the owner client.
-        }
-
-        latestCorrectPos = transform.position;
-        onUpdatePos = transform.position;
+        this.latestCorrectPos = transform.position;
+        this.onUpdatePos = transform.position;
     }
 
-    /// <summary>
-    /// While script is observed (in a PhotonView), this is called by PUN with a stream to write or read.
-    /// </summary>
-    /// <remarks>
-    /// The property stream.isWriting is true for the owner of a PhotonView. This is the only client that
-    /// should write into the stream. Others will receive the content written by the owner and can read it.
-    /// 
-    /// Note: Send only what you actually want to consume/use, too!
-    /// Note: If the owner doesn't write something into the stream, PUN won't send anything.
-    /// </remarks>
-    /// <param name="stream">Read or write stream to pass state of this GameObject (or whatever else).</param>
-    /// <param name="info">Some info about the sender of this stream, who is the owner of this PhotonView (and GameObject).</param>
+
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
         if (stream.isWriting)
@@ -50,24 +43,33 @@ public class CubeLerp : Photon.MonoBehaviour
             stream.Serialize(ref pos);
             stream.Serialize(ref rot);
 
-            latestCorrectPos = pos;                 // save this to move towards it in FixedUpdate()
-            onUpdatePos = transform.localPosition;  // we interpolate from here to latestCorrectPos
-            fraction = 0;                           // reset the fraction we alreay moved. see Update()
+            this.latestCorrectPos = pos;                // save this to move towards it in FixedUpdate()
+            this.onUpdatePos = transform.localPosition; // we interpolate from here to latestCorrectPos
+            this.fraction = 0;                          // reset the fraction we alreay moved. see Update()
 
-            transform.localRotation = rot;          // this sample doesn't smooth rotation
+            transform.localRotation = rot;              // this sample doesn't smooth rotation
         }
     }
 
+
     public void Update()
     {
-        // We get 10 updates per sec. sometimes a few less or one or two more, depending on variation of lag.
-        // Due to that we want to reach the correct position in a little over 100ms. This way, we usually avoid a stop.
+        if (this.photonView.isMine)
+        {
+            return;     // if this object is under our control, we don't need to apply received position-updates 
+        }
+
+        // We get 10 updates per sec. Sometimes a few less or one or two more, depending on variation of lag.
+        // Due to that we want to reach the correct position in a little over 100ms. We get a new update then.
+        // This way, we can usually avoid a stop of our interpolated cube movement.
+        //
         // Lerp() gets a fraction value between 0 and 1. This is how far we went from A to B.
         //
-        // Our fraction variable would reach 1 in 100ms if we multiply deltaTime by 10.
-        // We want it to take a bit longer, so we multiply with 9 instead.
+        // So in 100 ms, we want to move from our previous position to the latest known. 
+        // Our fraction variable should reach 1 in 100ms, so we should multiply deltaTime by 10.
+        // We want it to take a bit longer, so we multiply with 9 instead!
 
-        fraction = fraction + Time.deltaTime * 9;
-        transform.localPosition = Vector3.Lerp(onUpdatePos, latestCorrectPos, fraction);    // set our pos between A and B
+        this.fraction = this.fraction + Time.deltaTime * 9;
+        transform.localPosition = Vector3.Lerp(this.onUpdatePos, this.latestCorrectPos, this.fraction); // set our pos between A and B
     }
 }

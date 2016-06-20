@@ -34,6 +34,9 @@ public class RoomInfo
     protected byte maxPlayersField = 0;
 
     /// <summary>Backing field for property.</summary>
+    protected string[] expectedUsersField;
+
+    /// <summary>Backing field for property.</summary>
     protected bool openField = true;
 
     /// <summary>Backing field for property.</summary>
@@ -148,10 +151,10 @@ public class RoomInfo
     /// <summary>
     /// Makes RoomInfo comparable (by name).
     /// </summary>
-    public override bool Equals(object p)
+    public override bool Equals(object other)
     {
-        Room pp = p as Room;
-        return (pp != null && this.nameField.Equals(pp.nameField));
+        RoomInfo otherRoomInfo = other as RoomInfo;
+        return (otherRoomInfo != null && this.name.Equals(otherRoomInfo.nameField));
     }
 
     /// <summary>
@@ -162,6 +165,7 @@ public class RoomInfo
     {
         return this.nameField.GetHashCode();
     }
+
 
     /// <summary>Simple printingin method.</summary>
     /// <returns>Summary of this RoomInfo instance.</returns>
@@ -239,6 +243,11 @@ public class RoomInfo
         //{
         //    // could be cached but isn't useful
         //}
+
+        if (propertiesToCache.ContainsKey((byte)GamePropertyKey.ExpectedUsers))
+        {
+            this.expectedUsersField = (string[])propertiesToCache[GamePropertyKey.ExpectedUsers];
+        }
 
         // merge the custom properties (from your application) to the cache (only string-typed keys will be kept)
         this.customPropertiesField.MergeStringKeys(propertiesToCache);

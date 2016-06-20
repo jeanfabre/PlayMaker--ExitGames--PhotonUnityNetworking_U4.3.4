@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using ExitGames.Client.Photon;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
+using SupportClassPun = ExitGames.Client.Photon.SupportClass;
 
 namespace ExitGames.Client.Photon
 {
@@ -112,14 +113,14 @@ namespace ExitGames.Client.Photon
             {
                 gameProperties[GamePropertyKey.CleanupCacheOnLeave] = true;  			// this is only informational for the clients which join
             }
-            //if (roomOptions.checkUserOnJoin)
-            //{
-            //    op[ParameterCode.CheckUserOnJoin] = true;
-            //}
-            //if (roomOptions.PlayerTtl > 0 || roomOptions.PlayerTtl == -1)
-            //{
-            //    op[ParameterCode.PlayerTTL] = roomOptions.PlayerTtl;   //TURNBASED
-            //}
+
+            if (roomOptions.PlayerTtl > 0 || roomOptions.PlayerTtl == -1)
+            {
+                op[ParameterCode.CheckUserOnJoin] = true;               // this affects rejoining a room. requires a userId to be used. added in v1.67
+                op[ParameterCode.PlayerTTL] = roomOptions.PlayerTtl;    // TURNBASED
+                op[ParameterCode.EmptyRoomTTL] = roomOptions.PlayerTtl;
+            }
+
             //if (roomOptions.EmptyRoomTtl > 0)
             //{
             //    op[ParameterCode.EmptyRoomTTL] = roomOptions.EmptyRoomTtl;   //TURNBASED
@@ -128,14 +129,14 @@ namespace ExitGames.Client.Photon
             {
                 op[ParameterCode.SuppressRoomEvents] = true;
             }
-            //if (roomOptions.plugins != null)
-            //{
-            //    op[ParameterCode.Plugins] = roomOptions.plugins;
-            //}
-            //if (roomOptions.publishUserId)
-            //{
-            //    op[ParameterCode.PublishUserId] = true;
-            //}
+            if (roomOptions.plugins != null)
+            {
+                op[ParameterCode.Plugins] = roomOptions.plugins;
+            }
+            if (roomOptions.publishUserId)
+            {
+                op[ParameterCode.PublishUserId] = true;
+            }
         }
 
         public class EnterRoomParams
@@ -146,8 +147,8 @@ namespace ExitGames.Client.Photon
             public Hashtable PlayerProperties;
             public bool OnGameServer = true; // defaults to true! better send more parameter than too few (GS needs all)
             public bool CreateIfNotExists;
-            //public string[] ExpectedUsers;
-            //public int ActorNumber;
+            public bool RejoinOnly;
+            public string[] ExpectedUsers;
         }
 
         public class OpJoinRandomRoomParams
@@ -157,6 +158,7 @@ namespace ExitGames.Client.Photon
             public MatchmakingMode MatchingType;
             public TypedLobby TypedLobby;
             public string SqlLobbyFilter;
+            public string[] ExpectedUsers;
         }
 
         /// <summary>
@@ -188,10 +190,10 @@ namespace ExitGames.Client.Photon
                 op[ParameterCode.LobbyType] = (byte) opParams.Lobby.Type;
             }
 
-            //if (opParams.ExpectedUsers != null && opParams.ExpectedUsers.Length > 0)
-            //{
-            //    op[ParameterCode.Add] = opParams.ExpectedUsers;
-            //}
+            if (opParams.ExpectedUsers != null && opParams.ExpectedUsers.Length > 0)
+            {
+                op[ParameterCode.Add] = opParams.ExpectedUsers;
+            }
             if (opParams.OnGameServer)
             {
                 if (opParams.PlayerProperties != null && opParams.PlayerProperties.Count > 0)
@@ -203,7 +205,7 @@ namespace ExitGames.Client.Photon
                 this.RoomOptionsToOpParameters(op, opParams.RoomOptions);
             }
 
-            //UnityEngine.Debug.Log("CreateGame: " + SupportClass.DictionaryToString(op));
+            //UnityEngine.Debug.Log("CreateGame: " + SupportClassPun.DictionaryToString(op));
             return this.OpCustom(OperationCode.CreateGame, op, true);
         }
 
@@ -242,16 +244,16 @@ namespace ExitGames.Client.Photon
                 }
             }
 
-            //if (opParams.ActorId != 0)
-            //{
-            //    op[ParameterCode.JoinMode] = (byte)JoinMode.RejoinOnly; // changed from JoinMode.JoinOrRejoin
-            //    op[ParameterCode.ActorNr] = opParams.ActorId;
-            //}
+            if (opParams.RejoinOnly)
+            {
+                op[ParameterCode.JoinMode] = (byte)JoinMode.RejoinOnly; // changed from JoinMode.JoinOrRejoin
+            }
 
-            //if (opParams.ExpectedUsers != null && opParams.ExpectedUsers.Length > 0)
-            //{
-            //    op[ParameterCode.Add] = opParams.ExpectedUsers;
-            //}
+            if (opParams.ExpectedUsers != null && opParams.ExpectedUsers.Length > 0)
+            {
+                op[ParameterCode.Add] = opParams.ExpectedUsers;
+            }
+
             if (opParams.OnGameServer)
             {
                 if (opParams.PlayerProperties != null && opParams.PlayerProperties.Count > 0)
@@ -266,7 +268,7 @@ namespace ExitGames.Client.Photon
                 }
             }
 
-            // UnityEngine.Debug.Log("JoinGame: " + SupportClass.DictionaryToString(op));
+            // UnityEngine.Debug.Log("JoinGame: " + SupportClassPun.DictionaryToString(op));
             return this.OpCustom(OperationCode.JoinGame, op, true);
         }
 
@@ -314,10 +316,10 @@ namespace ExitGames.Client.Photon
                 opParameters[ParameterCode.Data] = opJoinRandomRoomParams.SqlLobbyFilter;
             }
 
-            //if (opJoinRandomRoomParams.ExpectedUsers != null && opJoinRandomRoomParams.ExpectedUsers.Length > 0)
-            //{
-            //    opParameters[ParameterCode.Add] = opJoinRandomRoomParams.ExpectedUsers;
-            //}
+            if (opJoinRandomRoomParams.ExpectedUsers != null && opJoinRandomRoomParams.ExpectedUsers.Length > 0)
+            {
+                opParameters[ParameterCode.Add] = opJoinRandomRoomParams.ExpectedUsers;
+            }
 
             // UnityEngine.Debug.LogWarning("OpJoinRandom: " + opParameters.ToStringFull());
             return this.OpCustom(OperationCode.JoinRandomGame, opParameters, true);
@@ -737,6 +739,45 @@ namespace ExitGames.Client.Photon
         /// </summary>
         public const int PluginMismatch = 0x7FFF - 16;
 
+        /// <summary>
+        /// (32750) for join requests. Indicates the current peer already called join and is joined to the room.
+        /// </summary>
+        public const int JoinFailedPeerAlreadyJoined = 32750; // 0x7FFF - 17,
+
+        /// <summary>
+        /// (32749)  for join requests. Indicates the list of InactiveActors already contains an actor with the requested ActorNr or UserId.
+        /// </summary>
+        public const int JoinFailedFoundInactiveJoiner = 32749; // 0x7FFF - 18,
+
+        /// <summary>
+        /// (32748) for join requests. Indicates the list of Actors (active and inactive) did not contain an actor with the requested ActorNr or UserId.
+        /// </summary>
+        public const int JoinFailedWithRejoinerNotFound = 32748; // 0x7FFF - 19,
+
+        /// <summary>
+        /// (32747) for join requests. Note: for future use - Indicates the requested UserId was found in the ExcludedList.
+        /// </summary>
+        public const int JoinFailedFoundExcludedUserId = 32747; // 0x7FFF - 20,
+
+        /// <summary>
+        /// (32746) for join requests. Indicates the list of ActiveActors already contains an actor with the requested ActorNr or UserId.
+        /// </summary>
+        public const int JoinFailedFoundActiveJoiner = 32746; // 0x7FFF - 21,
+
+        /// <summary>
+        /// (32745)  for SetProerties and Raisevent (if flag HttpForward is true) requests. Indicates the maximum allowd http requests per minute was reached.
+        /// </summary>
+        public const int HttpLimitReached = 32745; // 0x7FFF - 22,
+
+        /// <summary>
+        /// (32744) for WebRpc requests. Indicates the the call to the external service failed.
+        /// </summary>
+        public const int ExternalHttpCallFailed = 32744; // 0x7FFF - 23,
+
+        /// <summary>
+        /// Indicates that an operation failed because of errorneous slot manipulations. The reserved slots can not exceed MaxPlayers.
+        /// </summary>
+        public const int SlotError = 32742;
 
     }
 
@@ -795,6 +836,9 @@ namespace ExitGames.Client.Photon
         /// <summary>(248) Code for MasterClientId, which is synced by server. When sent as op-parameter this is (byte)203. As room property this is (byte)248.</summary>
         /// <remarks>Tightly related to ParameterCode.MasterClientId.</remarks>
         public const byte MasterClientId = (byte)248;
+
+        /// <summary>(247) Code for ExpectedUsers in a room. Matchmaking keeps a slot open for the players with these userIDs.</summary>
+        public const byte ExpectedUsers = (byte)247;
     }
 
 
@@ -843,7 +887,8 @@ namespace ExitGames.Client.Photon
         /// <summary>(252) When player left game unexpected and the room has a playerTtl > 0, this event is fired to let everyone know about the timeout.</summary>
         /// Obsolete. Replaced by Leave. public const byte Disconnect = LiteEventCode.Disconnect;
 
-        /// <summary>(251) Sent by Photon Cloud when a plugin-call failed. Usually, the execution on the server continues, despite the issue. Contains: ParameterCode.Info.</summary>
+        /// <summary>(251) Sent by Photon Cloud when a plugin-call or webhook-call failed. Usually, the execution on the server continues, despite the issue. Contains: ParameterCode.Info.</summary>
+        /// <seealso cref="https://doc.photonengine.com/en/realtime/current/reference/webhooks#options"/>
         public const byte ErrorInfo = 251;
 
         /// <summary>(250) Sent by Photon whent he event cache slice was changed. Done by OpRaiseEvent.</summary>
@@ -1051,6 +1096,9 @@ namespace ExitGames.Client.Photon
         /// Note: for backwards compatibility null omits any check.
         /// </summary>
         public const byte Plugins = 204;
+
+        /// <summary>(202) Used by the server in Operation Responses, when it sends the nickname of the client (the user's nickname).</summary>
+        public const byte NickName = 202;
 
         /// <summary>(201) Informs user about name of plugin load to game</summary>
         public const byte PluginName = 201;
@@ -1477,7 +1525,6 @@ namespace ExitGames.Client.Photon
 
         /// <summary>After initial authentication, Photon provides a token for this client / user, which is subsequently used as (cached) validation.</summary>
         public string Token { get; set; }
-
 
         /// <summary>The UserId should be a unique identifier per user. This is for finding friends, etc..</summary>
         public string UserId { get; set; }
