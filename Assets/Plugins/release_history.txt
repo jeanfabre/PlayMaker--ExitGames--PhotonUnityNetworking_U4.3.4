@@ -8,6 +8,19 @@ https://doc.photonengine.com
 http://forum.photonengine.com
 
 
+
+*** Version 4.1.0.6 (21. June 2016 - rev3376)
+Internal: 
+    Removed: The wrapper for the optional "native encryption library" from most assemblies. It didn't get certified for the Windows Store and caused problems in the Unity WebPlayer. This will be provided on demand instead.
+    Removed: Our upcoming protocol implementation until it's fully compatible with all supported platforms. Despite not being used, it also caused some issues on some Unity exports.
+    Changed: Usage of MemoryStream is being replaced with a StreamBuffer. This is our own implementation and always grants access to the underlying byte[] (which is not possible in Windows Phone / Store API in some cases). For your Custom Type serialization, replace MemoryStream with StreamBuffer. That's all.
+    Internal: Commands are now split into header and payload byte-arrays, instead of copying them into yet another buffer before sending them.
+    Added: Support for IPv6 adresses in Photon Ping classes. This supports "Best Region" usage in PUN.
+    Fixed: After DNS resolution, IPv6 adresses are preferred over IPv4 ones.
+LoadBalancing:
+	Fixed: LoadBalancingPeer.OpRaiseEvent(...) to send operations (and events) unencrypted again. 
+    
+
 *** Version 4.1.0.4 (19. May 2016 - rev3322)
 Internal:
     Updated: For Unity, the usage of the optional "native sockets" library is now compatible with IPv6 addresses, as required by Apple.

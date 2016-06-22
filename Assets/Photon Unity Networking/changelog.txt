@@ -1,7 +1,23 @@
+v1.71 (15. June 2016)
+Fixed: Best Region is now working with IPv6 networks. (It's not supported for WebGL though)
+Moved: PunTurnManager moved to UtilityScript folder for reusability when cleaning up demos.
+
+v1.70 (8. June 2016)
+Changed: Serialization methods from MemoryStream to StreamBuffer. This is a light wrapper for a byte[] which provides access to this array. That was not allowed in the Windows Store compatible API. To update, just replace MemoryStream with StreamBuffer in your custom type serialization.
+New: PUN Basics Tutorial, available within the Demo Hub.
+Updated: Input for some demos now also works with controllers (RPGCamera, RPGMovement and JumpAndRunMovement support this now).
+Fixed: Ownership of a PhotonView no longer gets updated when anyone (aside from the owner) sends updates for it. This could cause issues when the (new) owner of an object got outdated updates from another (older) owner.
+Fixed: PhotonViewInspector. When ownership gets transferred for scene objects, this shows correctly in the inspector at runtime.
+Fixed: PhotonAnimatorView. removed warning thrown during trigger caching checks.
+Changed: Delta compression will now re-use some memory, which should be more effective.
+Changed: Aggregation of internal OnPhotonSerializeView()-updates is more effective. More memory is being re-used.
+Updated: To latest Photon3Unity3D.dll v4.1.0.5. It will no longer fail Windows Store Certification and has several improvements throughout.
+
+
 v1.69 (19. May 2016)
 Updated: Rock Paper Scissors Demo Scene, featuring fixes for timing and turn management, and implementation of a progress bar to indicate timer
 Updated: PUN+ native socket library for Unity 4.7 iOS to support IPv6.
-
+Fixed: PhotonAnimatorView. Triggers now properly synchronized if set to "discrete" mode.
 
 v1.68 (3. May 2016)
 Fixed: The "reset" action of a PhotonTransformView-inspector now works as expected and sets proper, useful default values.

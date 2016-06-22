@@ -57,7 +57,7 @@ public class NamePickGui : MonoBehaviour
             GUILayout.Label("To continue, configure your Chat AppId.\nIt's listed in the Chat Dashboard (online).\nStop play-mode and edit:\nScripts/ChatGUI in the Hierarchy.");
             if (GUILayout.Button("Open Chat Dashboard"))
             {
-                Application.OpenURL("https://www.exitgames.com/en/Chat/Dashboard");
+                Application.OpenURL("https://www.photonengine.com/dashboard/Chat");
             }
             GUILayout.EndArea();
             return;

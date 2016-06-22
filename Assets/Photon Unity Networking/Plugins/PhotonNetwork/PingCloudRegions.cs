@@ -17,14 +17,28 @@ using System.Net.Sockets;
 /// <remarks>Incompatible with Windows 8 Store/Phone API.</remarks>
 public class PingMonoEditor : PhotonPing
 {
-    private Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+    private Socket sock;
 
+    /// <summary>
+    /// Sends a "Photon Ping" to a server.
+    /// </summary>
+    /// <param name="ip">Address in IPv4 or IPv6 format. An address containing a '.' will be interpretet as IPv4.</param>
+    /// <returns>True if the Photon Ping could be sent.</returns>
     public override bool StartPing(string ip)
     {
         base.Init();
 
         try
         {
+            if (ip.Contains("."))
+            {
+                this.sock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            }
+            else
+            {
+                this.sock = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
+            }
+
             sock.ReceiveTimeout = 5000;
             sock.Connect(ip, 5055);
 
@@ -218,13 +232,23 @@ public class PhotonPingManager
     /// <summary>
     /// Attempts to resolve a hostname into an IP string or returns empty string if that fails.
     /// </summary>
+    /// <remarks>
+    /// To be compatible with most platforms, the address family is checked like this:</br>
+    /// if (ipAddress.AddressFamily.ToString().Contains("6")) // ipv6...
+    /// </reamrks>
     /// <param name="hostName">Hostname to resolve.</param>
     /// <returns>IP string or empty string if resolution fails</returns>
     public static string ResolveHost(string hostName)
     {
+        string ipv4Address = string.Empty;
+
         try
         {
             IPAddress[] address = Dns.GetHostAddresses(hostName);
+            //foreach (IPAddress adr in address)
+            //{
+            //    Debug.Log(hostName + " -> Adress: " + adr + " family: " + adr.AddressFamily.ToString());
+            //}
 
             if (address.Length == 1)
             {
@@ -237,10 +261,14 @@ public class PhotonPingManager
                 IPAddress ipAddress = address[index];
                 if (ipAddress != null)
                 {
-                    string ipString = ipAddress.ToString();
-                    if (ipString.IndexOf('.') >= 0)
+                    // checking ddressFamily.ToString() means we don't have to import System.Net.Sockets, which is not available on some platforms (Metro)
+                    if (ipAddress.AddressFamily.ToString().Contains("6"))
                     {
-                        return ipString;
+                        return ipAddress.ToString();
+                    }
+                    if (string.IsNullOrEmpty(ipv4Address))
+                    {
+                        ipv4Address = address.ToString();
                     }
                 }
             }
@@ -250,7 +278,7 @@ public class PhotonPingManager
             Debug.Log("Exception caught! " + e.Source + " Message: " + e.Message);
         }
 
-        return String.Empty;
+        return ipv4Address;
     }
 #endif
 }

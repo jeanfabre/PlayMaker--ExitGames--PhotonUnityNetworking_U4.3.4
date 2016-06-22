@@ -28,7 +28,7 @@ using System.IO;
 public static class PhotonNetwork
 {
     /// <summary>Version number of PUN. Also used in GameVersion to separate client version from each other.</summary>
-    public const string versionPUN = "1.69";
+    public const string versionPUN = "1.72";
 
     /// <summary>Version string for your this build. Can be used to separate incompatible clients. Sent during connect.</summary>
     /// <remarks>This is only sent when you connect so that is also the place you set it usually (e.g. in ConnectUsingSettings).</remarks>
@@ -849,24 +849,24 @@ public static class PhotonNetwork
     /// </summary>
     /// <remarks>
     /// If you set BackgroundTimeout PUN will stop keeping the connection, BackgroundTimeout seconds after OnApplicationPause(true) got called.
-    /// That means: After the set time, a regular timeout can happen. 
+    /// That means: After the set time, a regular timeout can happen.
     /// Your application will notice that timeout when it becomes active again.
-    /// 
-    /// 
-    /// To handle the timeout, implement: OnConnectionFail() (this case will use the cause: DisconnectByServerTimeout). 
-    /// 
-    /// 
+    ///
+    ///
+    /// To handle the timeout, implement: OnConnectionFail() (this case will use the cause: DisconnectByServerTimeout).
+    ///
+    ///
     /// It's best practice to let inactive apps/connections time out after a while but allow taking calls, etc.
-    /// So a reasonable value should be found. 
+    /// So a reasonable value should be found.
     /// We think it could be 60 seconds.
-    /// 
+    ///
     /// Set a value greater than 0.001f, if you want to limit how long an app can keep the connection in background.
-    /// 
+    ///
     ///
     /// Info:
     /// PUN is running a "fallback thread" to send ACKs to the server, even when Unity is not calling Update() regularly.
     /// This helps keeping the connection while loading scenes and assets and when the app is in the background.
-    /// 
+    ///
     /// Note:
     /// Some platforms (e.g. iOS) don't allow to keep a connection while the app is in background.
     /// In those cases, this value does not change anything, the app immediately loses connection in background.
@@ -1219,7 +1219,7 @@ public static class PhotonNetwork
     /// To ignore the config file and connect anywhere call: PhotonNetwork.ConnectToMaster.
     ///
     /// To connect to the Photon Cloud, a valid AppId must be in the settings file (shown in the Photon Cloud Dashboard).
-    /// https://www.exitgames.com/dashboard
+    /// https://www.photonengine.com/dashboard
     ///
     /// Connecting to the Photon Cloud might fail due to:
     /// - Invalid AppId (calls: OnFailedToConnectToPhoton(). check exact AppId value)
@@ -1287,7 +1287,7 @@ public static class PhotonNetwork
     /// <summary>Connect to a Photon Master Server by address, port, appID and game(client) version.</summary>
     /// <remarks>
     /// To connect to the Photon Cloud, a valid AppId must be in the settings file (shown in the Photon Cloud Dashboard).
-    /// https://www.exitgames.com/dashboard
+    /// https://www.photonengine.com/dashboard
     ///
     /// Connecting to the Photon Cloud might fail due to:
     /// - Invalid AppId (calls: OnFailedToConnectToPhoton(). check exact AppId value)
@@ -1372,10 +1372,10 @@ public static class PhotonNetwork
     /// <remarks>
     /// This method re-connects directly to the game server which was hosting the room PUN was in before.
     /// If the room was shut down in the meantime, PUN will call OnPhotonJoinRoomFailed and return this client to the Master Server.
-    /// 
+    ///
     /// Check the return value, if this client will attempt a reconnect and rejoin (if the conditions are met).
     /// If ReconnectAndRejoin returns false, you can still attempt a Reconnect and ReJoin.
-    /// 
+    ///
     /// Similar to PhotonNetwork.ReJoin, this requires you to use unique IDs per player (the UserID).
     /// </remarks>
     /// <returns>False, if there is no known room or game server to return to. Then, this client does not attempt the ReconnectAndRejoin.</returns>
@@ -1425,7 +1425,7 @@ public static class PhotonNetwork
     ///
     /// The PUN Setup Wizard stores your appID in a settings file and applies a server address/port.
     /// To connect to the Photon Cloud, a valid AppId must be in the settings file (shown in the Photon Cloud Dashboard).
-    /// https://www.exitgames.com/dashboard
+    /// https://www.photonengine.com/dashboard
     ///
     /// Connecting to the Photon Cloud might fail due to:
     /// - Invalid AppId (calls: OnFailedToConnectToPhoton(). check exact AppId value)
@@ -1712,7 +1712,7 @@ public static class PhotonNetwork
     /// to switch to the assigned game server and roomName.
     ///
     /// PhotonNetwork.autoCleanUpPlayerObjects will become this room's autoCleanUp property and that's used by all clients that join this room.
-    /// 
+    ///
     /// You can define an array of expectedUsers, to block player slots in the room for these users.
     /// The corresponding feature in Photon is called "Slot Reservation" and can be found in the doc pages.
     /// </remarks>
@@ -1741,7 +1741,7 @@ public static class PhotonNetwork
 
         typedLobby = typedLobby ?? ((networkingPeer.insideLobby) ? networkingPeer.lobby : null);  // use given lobby, or active lobby (if any active) or none
 
-        LoadbalancingPeer.EnterRoomParams opParams = new LoadbalancingPeer.EnterRoomParams();
+        EnterRoomParams opParams = new EnterRoomParams();
         opParams.RoomName = roomName;
         opParams.RoomOptions = roomOptions;
         opParams.Lobby = typedLobby;
@@ -1783,7 +1783,7 @@ public static class PhotonNetwork
     /// Despite using multiple lobbies, a roomName is always "global" for your application and so you don't
     /// have to specify which lobby it's in. The Master Server will find the room.
     /// In the Photon Cloud, an application is defined by AppId, Game- and PUN-version.
-    /// 
+    ///
     /// You can define an array of expectedUsers, to block player slots in the room for these users.
     /// The corresponding feature in Photon is called "Slot Reservation" and can be found in the doc pages.
     /// </remarks>
@@ -1816,7 +1816,7 @@ public static class PhotonNetwork
         }
 
 
-        LoadbalancingPeer.EnterRoomParams opParams = new LoadbalancingPeer.EnterRoomParams();
+        EnterRoomParams opParams = new EnterRoomParams();
         opParams.RoomName = roomName;
         opParams.ExpectedUsers = expectedUsers;
 
@@ -1850,7 +1850,7 @@ public static class PhotonNetwork
     ///
     /// The parameters roomOptions and typedLobby are only used when the room actually gets created by this client.
     /// You know if this client created a room, if you get a callback OnCreatedRoom (before OnJoinedRoom gets called as well).
-    /// 
+    ///
     /// You can define an array of expectedUsers, to block player slots in the room for these users.
     /// The corresponding feature in Photon is called "Slot Reservation" and can be found in the doc pages.
     /// </remarks>
@@ -1884,7 +1884,7 @@ public static class PhotonNetwork
 
         typedLobby = typedLobby ?? ((networkingPeer.insideLobby) ? networkingPeer.lobby : null);  // use given lobby, or active lobby (if any active) or none
 
-        LoadbalancingPeer.EnterRoomParams opParams = new LoadbalancingPeer.EnterRoomParams();
+        EnterRoomParams opParams = new EnterRoomParams();
         opParams.RoomName = roomName;
         opParams.RoomOptions = roomOptions;
         opParams.Lobby = typedLobby;
@@ -1957,7 +1957,7 @@ public static class PhotonNetwork
     ///
     /// In offlineMode, a room will be created but no properties will be set and all parameters of this
     /// JoinRandomRoom call are ignored. The event/callback OnJoinedRoom gets called (see enum PhotonNetworkingMessage).
-    /// 
+    ///
     /// You can define an array of expectedUsers, to block player slots in the room for these users.
     /// The corresponding feature in Photon is called "Slot Reservation" and can be found in the doc pages.
     /// </remarks>
@@ -1988,7 +1988,7 @@ public static class PhotonNetwork
 
         typedLobby = typedLobby ?? ((networkingPeer.insideLobby) ? networkingPeer.lobby : null);  // use given lobby, or active lobby (if any active) or none
 
-        LoadbalancingPeer.OpJoinRandomRoomParams opParams = new LoadbalancingPeer.OpJoinRandomRoomParams();
+        OpJoinRandomRoomParams opParams = new OpJoinRandomRoomParams();
         opParams.ExpectedCustomRoomProperties = expectedCustomRoomProperties;
         opParams.ExpectedMaxPlayers = expectedMaxPlayers;
         opParams.MatchingType = matchingType;
@@ -1999,20 +1999,20 @@ public static class PhotonNetwork
         return networkingPeer.OpJoinRandomRoom(opParams);
     }
 
-    
+
 	/// <summary>Can be used to return to a room after a disconnect and reconnect.</summary>
 	/// <remarks>
 	/// After losing connection, you might be able to return to a room and continue playing,
 	/// if the client is reconnecting fast enough. Use Reconnect() and this method.
 	/// Cache the room name you're in and use ReJoin(roomname) to return to a game.
-	/// 
-	/// Note: To be able to ReJoin any room, you need to use UserIDs! 
+	///
+	/// Note: To be able to ReJoin any room, you need to use UserIDs!
 	/// You also need to set RoomOptions.PlayerTtl.
-	/// 
+	///
 	/// <b>Important: Instantiate() and use of RPCs is not yet supported.</b>
-	/// The ownership rules of PhotonViews prevent a seamless return to a game. 
+	/// The ownership rules of PhotonViews prevent a seamless return to a game.
 	/// Use Custom Properties and RaiseEvent with event caching instead.
-	/// 
+	///
 	/// Common use case: Press the Lock Button on a iOS device and you get disconnected immediately.
 	/// </remarks>
     public static bool ReJoinRoom(string roomName)
@@ -2033,7 +2033,7 @@ public static class PhotonNetwork
             return false;
         }
 
-        LoadbalancingPeer.EnterRoomParams opParams = new LoadbalancingPeer.EnterRoomParams();
+        EnterRoomParams opParams = new EnterRoomParams();
         opParams.RoomName = roomName;
         opParams.RejoinOnly = true;
         opParams.PlayerProperties = player.customProperties;
@@ -2915,19 +2915,26 @@ public static class PhotonNetwork
 
         if (room == null)
         {
-            Debug.LogWarning("Cannot send RPCs in Lobby! RPC dropped.");
+            Debug.LogWarning("RPCs can only be sent in rooms. Call of \"" + methodName + "\" gets executed locally only, if at all.");
             return;
         }
 
         if (networkingPeer != null)
         {
-            if (PhotonNetwork.networkingPeer.hasSwitchedMC && target == PhotonTargets.MasterClient)
+            if (PhotonNetwork.room.serverSideMasterClient)
             {
-                networkingPeer.RPC(view, methodName, PhotonNetwork.masterClient, encrypt, parameters);
+                networkingPeer.RPC(view, methodName, target, null, encrypt, parameters);
             }
             else
             {
-                networkingPeer.RPC(view, methodName, target, encrypt, parameters);
+                if (PhotonNetwork.networkingPeer.hasSwitchedMC && target == PhotonTargets.MasterClient)
+                {
+                    networkingPeer.RPC(view, methodName, PhotonTargets.Others, PhotonNetwork.masterClient, encrypt, parameters);
+                }
+                else
+                {
+                    networkingPeer.RPC(view, methodName, target, null, encrypt, parameters);
+                }
             }
         }
         else
@@ -2948,18 +2955,18 @@ public static class PhotonNetwork
 
         if (room == null)
         {
-            Debug.LogWarning("Cannot send RPCs in Lobby, only processed locally");
+            Debug.LogWarning("RPCs can only be sent in rooms. Call of \"" + methodName + "\" gets executed locally only, if at all.");
             return;
         }
 
         if (player == null)
         {
-            Debug.LogError("Error; Sending RPC to player null! Aborted \"" + methodName + "\"");
+            Debug.LogError("RPC can't be sent to target PhotonPlayer being null! Did not send \"" + methodName + "\" call.");
         }
 
         if (networkingPeer != null)
         {
-            networkingPeer.RPC(view, methodName, targetPlayer, encrpyt, parameters);
+            networkingPeer.RPC(view, methodName, PhotonTargets.Others, targetPlayer, encrpyt, parameters);
         }
         else
         {

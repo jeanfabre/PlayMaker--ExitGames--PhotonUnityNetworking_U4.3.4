@@ -975,8 +975,8 @@
         </member>
         <member name="P:ExitGames.Client.Photon.PhotonPeer.OutgoingStreamBufferSize">
             <summary>
-            Defines the initial size of an internally used MemoryStream for Tcp.
-            The MemoryStream is used to aggregate operation into (less) send calls,
+            Defines the initial size of an internally used StreamBuffer for Tcp.
+            The StreamBuffer is used to aggregate operation into (less) send calls,
             which uses less resoures.
             </summary>
             <remarks>
@@ -1273,6 +1273,13 @@
             <summary>Uses C# Socket class from System.Net.Sockets (as Unity usually does).</summary>
             <remarks>Incompatible with Windows 8 Store/Phone API.</remarks>
         </member>
+        <member name="M:ExitGames.Client.Photon.PingMono.StartPing(System.String)">
+            <summary>
+            Sends a "Photon Ping" to a server.
+            </summary>
+            <param name="ip">Address in IPv4 or IPv6 format. An address containing a '.' will be interpretet as IPv4.</param>
+            <returns>True if the Photon Ping could be sent.</returns>
+        </member>
         <member name="T:ExitGames.Client.Photon.OperationRequest">
             <summary>
             Container for an Operation request, which is a code and parameters.
@@ -1565,32 +1572,14 @@
               Null value don't have types.
             </summary>
         </member>
-        <member name="M:ExitGames.Client.Photon.Protocol16.Serialize(System.IO.MemoryStream,System.Object,System.Boolean)">
+        <member name="M:ExitGames.Client.Photon.Protocol16.Serialize(ExitGames.Client.Photon.StreamBuffer,System.Object,System.Boolean)">
             <summary>
             Calls the correct serialization method for the passed object.
             </summary>
         </member>
-        <member name="M:ExitGames.Client.Photon.Protocol16.Serialize(System.Int16,System.Byte[],System.Int32@)">
+        <member name="M:ExitGames.Client.Photon.Protocol16.DeserializeInteger(ExitGames.Client.Photon.StreamBuffer)">
             <summary>
-            Serializes a short typed value into a byte-array (target) starting at the also given targetOffset.
-            The altered offset is known to the caller, because it is given via a referenced parameter.
-            </summary>
-            <param name="value">The short value to be serialized</param>
-            <param name="target">The byte-array to serialize the short to</param>
-            <param name="targetOffset">The offset in the byte-array</param>
-        </member>
-        <member name="M:ExitGames.Client.Photon.Protocol16.Serialize(System.Int32,System.Byte[],System.Int32@)">
-            <summary>
-            Serializes an int typed value into a byte-array (target) starting at the also given targetOffset.
-            The altered offset is known to the caller, because it is given via a referenced parameter.
-            </summary>
-            <param name="value">The int value to be serialized</param>
-            <param name="target">The byte-array to serialize the short to</param>
-            <param name="targetOffset">The offset in the byte-array</param>
-        </member>
-        <member name="M:ExitGames.Client.Photon.Protocol16.DeserializeInteger(System.IO.MemoryStream)">
-            <summary>
-            DeserializeInteger returns an Integer typed value from the given Memorystream.
+            DeserializeInteger returns an Integer typed value from the given stream.
             </summary>
         </member>
         <member name="T:ExitGames.Client.Photon.SocketTcp">
@@ -1840,44 +1829,6 @@
         </member>
         <member name="P:ExitGames.Client.Photon.TrafficStats.TimestampOfLastReliableCommand">
             <summary>Timestamp of last incoming reliable command (every second we expect a PING).</summary>
-        </member>
-        <member name="M:ExitGames.Client.IProtocol.Serialize(System.Int16,System.Byte[],System.Int32@)">
-            <summary>
-            Serializes a short typed value into a byte-array (target) starting at the also given targetOffset.
-            The altered offset is known to the caller, because it is given via a referenced parameter.
-            </summary>
-            <param name="value">The short value to be serialized</param>
-            <param name="target">The byte-array to serialize the short to</param>
-            <param name="targetOffset">The offset in the byte-array</param>
-        </member>
-        <member name="M:ExitGames.Client.IProtocol.Serialize(System.Int32,System.Byte[],System.Int32@)">
-            <summary>
-            Serializes an int typed value into a byte-array (target) starting at the also given targetOffset.
-            The altered offset is known to the caller, because it is given via a referenced parameter.
-            </summary>
-            <param name="value">The int value to be serialized</param>
-            <param name="target">The byte-array to serialize the short to</param>
-            <param name="targetOffset">The offset in the byte-array</param>
-        </member>
-        <member name="M:ExitGames.Client.IProtocol.Deserialize(System.Int16@,System.Byte[],System.Int32@)">
-            <summary>
-            Deserialize fills the given short typed value with the given byte-array (source) starting at the also given offset.
-            The result is placed in a variable (value). There is no need to return a value because the parameter value is given by reference.
-            The altered offset is this way also known to the caller.
-            </summary>
-            <param name="value">The short value to deserialized into</param>
-            <param name="source">The byte-array to deserialize from</param>
-            <param name="offset">The offset in the byte-array</param>
-        </member>
-        <member name="M:ExitGames.Client.IProtocol.Deserialize(System.Int32@,System.Byte[],System.Int32@)">
-            <summary>
-            Deserialize fills the given int typed value with the given byte-array (source) starting at the also given offset.
-            The result is placed in a variable (value). There is no need to return a value because the parameter value is given by reference.
-            The altered offset is this way also known to the caller.
-            </summary>
-            <param name="value">The int value to deserialize into</param>
-            <param name="source">The byte-array to deserialize from</param>
-            <param name="offset">The offset in the byte-array</param>
         </member>
         <member name="M:ExitGames.Client.IProtocol.Serialize(System.Object)">
             <summary>

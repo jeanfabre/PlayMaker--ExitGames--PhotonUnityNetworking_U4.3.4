@@ -160,7 +160,7 @@ public static class Extensions
     public static void StripKeysWithNullValues(this IDictionary original)
     {
         object[] keys = new object[original.Count];
-        //original.Keys.CopyTo(keys, 0);
+        //original.Keys.CopyTo(keys, 0);                // todo: figure out which platform didn't support this
         int i = 0;
         foreach (object k in original.Keys)
         {

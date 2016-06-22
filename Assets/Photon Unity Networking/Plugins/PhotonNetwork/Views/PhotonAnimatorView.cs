@@ -98,6 +98,12 @@ public class PhotonAnimatorView : MonoBehaviour
     private bool m_WasSynchronizeTypeChanged = true;
     private PhotonView m_PhotonView;
 
+	/// <summary>
+	/// Cached raised triggers that are set to be synchronized in discrete mode. since a Trigger only stay up for less than a frame,
+	/// We need to cache it until the next discrete serialization call.
+	/// </summary>
+	List<string> m_raisedDiscreteTriggersCache = new List<string>();
+
     #endregion
 
     #region Unity
@@ -126,6 +132,8 @@ public class PhotonAnimatorView : MonoBehaviour
         if (this.m_PhotonView.isMine == true)
         {
             SerializeDataContinuously();
+
+			CacheDiscreteTriggers();
         }
         else
         {
@@ -136,6 +144,27 @@ public class PhotonAnimatorView : MonoBehaviour
     #endregion
 
     #region Setup Synchronizing Methods
+
+
+	/// <summary>
+	/// Caches the discrete triggers values for keeping track of raised triggers, and will be reseted after the sync routine got performed
+	/// </summary>
+	public void CacheDiscreteTriggers()
+	{
+		for (int i = 0; i < this.m_SynchronizeParameters.Count; ++i)
+		{
+			SynchronizedParameter parameter = this.m_SynchronizeParameters[i];
+			
+			if (parameter.SynchronizeType == SynchronizeType.Discrete && parameter.Type == ParameterType.Trigger && this.m_Animator.GetBool(parameter.Name))
+			{
+				if (parameter.Type ==  ParameterType.Trigger)
+				{
+					m_raisedDiscreteTriggersCache.Add(parameter.Name);
+					break;
+				}
+			}
+		}
+	}
 
     /// <summary>
     /// Check if a specific layer is configured to be synchronize
@@ -371,11 +400,15 @@ public class PhotonAnimatorView : MonoBehaviour
                         stream.SendNext(this.m_Animator.GetInteger(parameter.Name));
                         break;
                     case ParameterType.Trigger:
-						stream.SendNext(this.m_Animator.GetBool (parameter.Name));
+						// here we can't rely on the current real state of the trigger, we might have missed its raise
+						stream.SendNext(this.m_raisedDiscreteTriggersCache.Contains(parameter.Name));
 						break;
                 }
             }
         }
+
+		// reset the cache, we've synchronized.
+		this.m_raisedDiscreteTriggersCache.Clear();
     }
 
     private void DeserializeDataDiscretly(PhotonStream stream)

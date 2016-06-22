@@ -1,31 +1,35 @@
 // ----------------------------------------------------------------------------
-// <copyright file="LoadbalancingPeer.cs" company="Exit Games GmbH">
-//   Loadbalancing Framework for Photon - Copyright (C) 2011 Exit Games GmbH
+// <copyright file="LoadBalancingPeer.cs" company="Exit Games GmbH">
+//   Loadbalancing Framework for Photon - Copyright (C) 2016 Exit Games GmbH
 // </copyright>
 // <summary>
-//   Provides the operations needed to use the loadbalancing server app(s).
+//   Provides operations to use the LoadBalancing and Cloud photon servers.
+//   No logic is implemented here.
 // </summary>
 // <author>developer@photonengine.com</author>
 // ----------------------------------------------------------------------------
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using ExitGames.Client.Photon;
-using Hashtable = ExitGames.Client.Photon.Hashtable;
-using SupportClassPun = ExitGames.Client.Photon.SupportClass;
 
-namespace ExitGames.Client.Photon
-{
+#if UNITY_4_0 || UNITY_4_1 || UNITY_4_2 || UNITY_4_3 || UNITY_4_4 || UNITY_4_5 || UNITY_4_6 || UNITY_4_7 || UNITY_5 || UNITY_5_0 || UNITY_5_1 || UNITY_6
+    using Hashtable = ExitGames.Client.Photon.Hashtable;
+    using SupportClassPun = ExitGames.Client.Photon.SupportClass;
+#endif
+
+
+
 
     /// <summary>
-    /// Internally used by PUN, a LoadbalancingPeer provides the operations and enum
-    /// definitions needed to use the Photon Loadbalancing server (or the Photon Cloud).
+    /// Internally used by PUN.
+    /// A LoadbalancingPeer provides the operations and enum definitions needed to use the loadbalancing server application which is also used in Photon Cloud.
     /// </summary>
     /// <remarks>
     /// The LoadBalancingPeer does not keep a state, instead this is done by a LoadBalancingClient.
     /// </remarks>
-    internal class LoadbalancingPeer : PhotonPeer
+    internal class LoadBalancingPeer : PhotonPeer
     {
 
         internal bool IsProtocolSecure
@@ -35,15 +39,28 @@ namespace ExitGames.Client.Photon
 
         private readonly Dictionary<byte, object> opParameters = new Dictionary<byte, object>(); // used in OpRaiseEvent() (avoids lots of new Dictionary() calls)
 
-        public LoadbalancingPeer(ConnectionProtocol protocolType) : base(protocolType)
+        /// <summary>
+        /// Creates a Peer with selected connection protocol.
+        /// </summary>
+        /// <remarks>Each connection protocol has it's own default networking ports for Photon.</remarks>
+        /// <param name="protocolType">The preferred option is UDP.</param>
+        public LoadBalancingPeer(ConnectionProtocol protocolType) : base(protocolType)
         {
+            // this does not require a Listener, so:
+            // make sure to set this.Listener before using a peer!
         }
 
+        /// <summary>
+        /// Creates a Peer with default connection protocol (UDP).
+        /// </summary>
+        public LoadBalancingPeer(IPhotonPeerListener listener, ConnectionProtocol protocolType) : base(listener, protocolType)
+        {
+        }
 
         public virtual bool OpGetRegions(string appId)
         {
             Dictionary<byte, object> parameters = new Dictionary<byte, object>();
-            parameters[(byte) ParameterCode.ApplicationId] = appId;
+            parameters[(byte)ParameterCode.ApplicationId] = appId;
 
             return this.OpCustom(OperationCode.GetRegions, parameters, true, 0, true);
         }
@@ -54,7 +71,7 @@ namespace ExitGames.Client.Photon
         /// </summary>
         /// <param name="lobby">The lobby join to.</param>
         /// <returns>If the operation could be sent (has to be connected).</returns>
-        public virtual bool OpJoinLobby(TypedLobby lobby)
+        public virtual bool OpJoinLobby(TypedLobby lobby = null)
         {
             if (this.DebugOut >= DebugLevel.INFO)
             {
@@ -65,8 +82,8 @@ namespace ExitGames.Client.Photon
             if (lobby != null && !lobby.IsDefault)
             {
                 parameters = new Dictionary<byte, object>();
-                parameters[(byte) ParameterCode.LobbyName] = lobby.Name;
-                parameters[(byte) ParameterCode.LobbyType] = (byte) lobby.Type;
+                parameters[(byte)ParameterCode.LobbyName] = lobby.Name;
+                parameters[(byte)ParameterCode.LobbyType] = (byte)lobby.Type;
             }
 
             return this.OpCustom(OperationCode.JoinLobby, parameters, true);
@@ -139,28 +156,6 @@ namespace ExitGames.Client.Photon
             }
         }
 
-        public class EnterRoomParams
-        {
-            public string RoomName;
-            public RoomOptions RoomOptions;
-            public TypedLobby Lobby;
-            public Hashtable PlayerProperties;
-            public bool OnGameServer = true; // defaults to true! better send more parameter than too few (GS needs all)
-            public bool CreateIfNotExists;
-            public bool RejoinOnly;
-            public string[] ExpectedUsers;
-        }
-
-        public class OpJoinRandomRoomParams
-        {
-            public Hashtable ExpectedCustomRoomProperties;
-            public byte ExpectedMaxPlayers;
-            public MatchmakingMode MatchingType;
-            public TypedLobby TypedLobby;
-            public string SqlLobbyFilter;
-            public string[] ExpectedUsers;
-        }
-
         /// <summary>
         /// Creates a room (on either Master or Game Server).
         /// The OperationResponse depends on the server the peer is connected to:
@@ -187,7 +182,7 @@ namespace ExitGames.Client.Photon
             if (opParams.Lobby != null && !string.IsNullOrEmpty(opParams.Lobby.Name))
             {
                 op[ParameterCode.LobbyName] = opParams.Lobby.Name;
-                op[ParameterCode.LobbyType] = (byte) opParams.Lobby.Type;
+                op[ParameterCode.LobbyType] = (byte)opParams.Lobby.Type;
             }
 
             if (opParams.ExpectedUsers != null && opParams.ExpectedUsers.Length > 0)
@@ -302,13 +297,13 @@ namespace ExitGames.Client.Photon
 
             if (opJoinRandomRoomParams.MatchingType != MatchmakingMode.FillRoom)
             {
-                opParameters[ParameterCode.MatchMakingType] = (byte) opJoinRandomRoomParams.MatchingType;
+                opParameters[ParameterCode.MatchMakingType] = (byte)opJoinRandomRoomParams.MatchingType;
             }
 
             if (opJoinRandomRoomParams.TypedLobby != null && !string.IsNullOrEmpty(opJoinRandomRoomParams.TypedLobby.Name))
             {
                 opParameters[ParameterCode.LobbyName] = opJoinRandomRoomParams.TypedLobby.Name;
-                opParameters[ParameterCode.LobbyType] = (byte) opJoinRandomRoomParams.TypedLobby.Type;
+                opParameters[ParameterCode.LobbyType] = (byte)opJoinRandomRoomParams.TypedLobby.Type;
             }
 
             if (!string.IsNullOrEmpty(opJoinRandomRoomParams.SqlLobbyFilter))
@@ -410,7 +405,6 @@ namespace ExitGames.Client.Photon
                 opParameters[ParameterCode.EventForward] = true;
             }
 
-            //UnityEngine.Debug.Log(opParameters.ToStringFull());
             return this.OpCustom((byte)OperationCode.SetProperties, opParameters, true, 0, false);
         }
 
@@ -469,8 +463,8 @@ namespace ExitGames.Client.Photon
         /// </remarks>
         /// <param name="appId">Your application's name or ID to authenticate. This is assigned by Photon Cloud (webpage).</param>
         /// <param name="appVersion">The client's version (clients with differing client appVersions are separated and players don't meet).</param>
-        /// <param name="authValues">Contains all values relevant for authentication (with third-party external Custom Authentication optionally).</param>
-        /// <param name="regionCode">When authenticating for a specific region, a NameServer will forward you to that region's MasterServer.</param>
+        /// <param name="authValues">Contains all values relevant for authentication. Even without account system (external Custom Auth), the clients are allowed to identify themselves.</param>
+        /// <param name="regionCode">Optional region code, if the client should connect to a specific Photon Cloud Region.</param>
         /// <param name="getLobbyStatistics">Set to true on Master Server to receive "Lobby Statistics" events.</param>
         /// <returns>If the operation could be sent (has to be connected).</returns>
         public virtual bool OpAuthenticate(string appId, string appVersion, AuthenticationValues authValues, string regionCode, bool getLobbyStatistics)
@@ -569,14 +563,14 @@ namespace ExitGames.Client.Photon
             Dictionary<byte, object> opParameters = new Dictionary<byte, object>();
             if (groupsToRemove != null)
             {
-                opParameters[(byte) ParameterCode.Remove] = groupsToRemove;
+                opParameters[(byte)ParameterCode.Remove] = groupsToRemove;
             }
             if (groupsToAdd != null)
             {
-                opParameters[(byte) ParameterCode.Add] = groupsToAdd;
+                opParameters[(byte)ParameterCode.Add] = groupsToAdd;
             }
 
-            return this.OpCustom((byte) OperationCode.ChangeGroups, opParameters, true, 0);
+            return this.OpCustom((byte)OperationCode.ChangeGroups, opParameters, true, 0);
         }
 
 
@@ -592,7 +586,7 @@ namespace ExitGames.Client.Photon
         public virtual bool OpRaiseEvent(byte eventCode, object customEventContent, bool sendReliable, RaiseEventOptions raiseEventOptions)
         {
             opParameters.Clear(); // re-used private variable to avoid many new Dictionary() calls (garbage collection)
-            opParameters[(byte) ParameterCode.Code] = (byte) eventCode;
+            opParameters[(byte)ParameterCode.Code] = (byte)eventCode;
             if (customEventContent != null)
             {
                 opParameters[(byte) ParameterCode.Data] = customEventContent;
@@ -628,6 +622,28 @@ namespace ExitGames.Client.Photon
 
             return this.OpCustom((byte) OperationCode.RaiseEvent, opParameters, sendReliable, raiseEventOptions.SequenceChannel, raiseEventOptions.Encrypt);
         }
+    }
+
+    internal class OpJoinRandomRoomParams
+    {
+        public Hashtable ExpectedCustomRoomProperties;
+        public byte ExpectedMaxPlayers;
+        public MatchmakingMode MatchingType;
+        public TypedLobby TypedLobby;
+        public string SqlLobbyFilter;
+        public string[] ExpectedUsers;
+    }
+
+    internal class EnterRoomParams
+    {
+        public string RoomName;
+        public RoomOptions RoomOptions;
+        public TypedLobby Lobby;
+        public Hashtable PlayerProperties;
+        public bool OnGameServer = true; // defaults to true! better send more parameter than too few (GS needs all)
+        public bool CreateIfNotExists;
+        public bool RejoinOnly;
+        public string[] ExpectedUsers;
     }
 
 
@@ -714,7 +730,7 @@ namespace ExitGames.Client.Photon
         /// <remarks>
         /// Some subscription plans for the Photon Cloud are region-bound. Servers of other regions can't be used then.
         /// Check your master server address and compare it with your Photon Cloud Dashboard's info.
-        /// https://cloud.photonengine.com/dashboard
+        /// https://www.photonengine.com/dashboard
         ///
         /// OpAuthorize is part of connection workflow but only on the Photon Cloud, this error can happen.
         /// Self-hosted Photon servers with a CCU limited license won't let a client connect at all.
@@ -775,9 +791,9 @@ namespace ExitGames.Client.Photon
         public const int ExternalHttpCallFailed = 32744; // 0x7FFF - 23,
 
         /// <summary>
-        /// Indicates that an operation failed because of errorneous slot manipulations. The reserved slots can not exceed MaxPlayers.
+        /// (32742) Server error during matchmaking with slot reservation. E.g. the reserved slots can not exceed MaxPlayers.
         /// </summary>
-        public const int SlotError = 32742;
+        public const int SlotError = 32742; // 0x7FFF - 25,
 
     }
 
@@ -798,7 +814,7 @@ namespace ExitGames.Client.Photon
         /// <remarks>A server-set value for async games, where players can leave the game and return later.</remarks>
         public const byte IsInactive = 254;
 
-        /// <summary>UserId of the player. Sent when room gets created with RoomOptions.publishUserId = true.</summary>
+        /// <summary>(253) UserId of the player. Sent when room gets created with RoomOptions.publishUserId = true.</summary>
         public const byte UserId = 253;
     }
 
@@ -911,14 +927,14 @@ namespace ExitGames.Client.Photon
         /// <summary>(235) Time To Live (TTL) for an 'actor' in a room. If a client disconnects, this actor is inactive first and removed after this timeout. In milliseconds.</summary>
         public const byte PlayerTTL = 235;
 
-        /// <summary>(234) Optional parameter of OpRaiseEvent to forward the event to some web-service.</summary>
+        /// <summary>(234) Optional parameter of OpRaiseEvent and OpSetCustomProperties to forward the event/operation to a web-service.</summary>
         public const byte EventForward = 234;
 
         /// <summary>(233) Optional parameter of OpLeave in async games. If false, the player does abandons the game (forever). By default players become inactive and can re-join.</summary>
         [Obsolete("Use: IsInactive")]
         public const byte IsComingBack = (byte)233;
 
-        /// <summary>(233) Used in EvLeave to describe if a user is inactive (and might come back) or not. In async / Turnbased games, inactive is default.</summary>
+        /// <summary>(233) Used in EvLeave to describe if a user is inactive (and might come back) or not. In rooms with PlayerTTL, becoming inactive is the default case.</summary>
         public const byte IsInactive = (byte)233;
 
         /// <summary>(232) Used when creating rooms to define if any userid can join the room only once.</summary>
@@ -1077,7 +1093,7 @@ namespace ExitGames.Client.Photon
         /// <summary>(209) Path of the WebRPC that got called. Also known as "WebRpc Name". Type: string.</summary>
         public const byte UriPath = 209;
 
-        /// <summary>(208) Parameters for a WebRPC as: Dictionaryy&lt;string, objecty&gt;. This will get serialized to JSon.</summary>
+        /// <summary>(208) Parameters for a WebRPC as: Dictionary&lt;string, object&gt;. This will get serialized to JSon.</summary>
         public const byte WebRpcParameters = 208;
 
         /// <summary>(207) ReturnCode for the WebRPC, as sent by the web service (not by Photon, which uses ErrorCode). Type: byte.</summary>
@@ -1289,93 +1305,108 @@ namespace ExitGames.Client.Photon
     }
 
 
-    ///// <summary>Wraps up common room properties needed when you create rooms. Read the individual entries for more details.</summary>
-    //public class RoomOptions
-    //{
-    //    /// <summary>Defines if this room is listed in the lobby. If not, it also is not joined randomly.</summary>
-    //    /// <remarks>
-    //    /// A room that is not visible will be excluded from the room lists that are sent to the clients in lobbies.
-    //    /// An invisible room can be joined by name but is excluded from random matchmaking.
-    //    ///
-    //    /// Use this to "hide" a room and simulate "private rooms". Players can exchange a roomname and create it
-    //    /// invisble to avoid anyone else joining it.
-    //    /// </remarks>
-    //    public bool IsVisible = true;
+    /// <summary>Wraps up common room properties needed when you create rooms. Read the individual entries for more details.</summary>
+    /// <remarks>This directly maps to the fields in the Room class.</remarks>
+    public class RoomOptions
+    {
+        /// <summary>Defines if this room is listed in the lobby. If not, it also is not joined randomly.</summary>
+        /// <remarks>
+        /// A room that is not visible will be excluded from the room lists that are sent to the clients in lobbies.
+        /// An invisible room can be joined by name but is excluded from random matchmaking.
+        ///
+        /// Use this to "hide" a room and simulate "private rooms". Players can exchange a roomname and create it
+        /// invisble to avoid anyone else joining it.
+        /// </remarks>
+        public bool isVisible { get { return this.isVisibleField; } set { this.isVisibleField = value; } }
+        private bool isVisibleField = true;
 
-    //    /// <summary>Defines if this room can be joined at all.</summary>
-    //    /// <remarks>
-    //    /// If a room is closed, no player can join this. As example this makes sense when 3 of 4 possible players
-    //    /// start their gameplay early and don't want anyone to join during the game.
-    //    /// The room can still be listed in the lobby (set isVisible to control lobby-visibility).
-    //    /// </remarks>
-    //    public bool IsOpen = true;
+        /// <summary>Defines if this room can be joined at all.</summary>
+        /// <remarks>
+        /// If a room is closed, no player can join this. As example this makes sense when 3 of 4 possible players
+        /// start their gameplay early and don't want anyone to join during the game.
+        /// The room can still be listed in the lobby (set isVisible to control lobby-visibility).
+        /// </remarks>
+        public bool isOpen { get { return this.isOpenField; } set { this.isOpenField = value; } }
+        private bool isOpenField = true;
 
-    //    /// <summary>Max number of players that can be in the room at any time. 0 means "no limit".</summary>
-    //    public byte MaxPlayers;
+        /// <summary>Max number of players that can be in the room at any time. 0 means "no limit".</summary>
+        public byte maxPlayers;
 
-    //    /// <summary>Time To Live (TTL) for an 'actor' in a room. If a client disconnects, this actor is inactive first and removed after this timeout. In milliseconds.</summary>
-    //    public int PlayerTtl;
 
-    //    /// <summary>Time To Live (TTL) for a room when the last player leaves. Keeps room in memory for case a player re-joins soon. In milliseconds.</summary>
-    //    public int EmptyRoomTtl;
+        /// <summary>Time To Live (TTL) for an 'actor' in a room. If a client disconnects, this actor is inactive first and removed after this timeout. In milliseconds.</summary>
+        public int PlayerTtl;
 
-    //    /// <summary>Activates UserId checks on joining - allowing a users to be only once in the room.</summary>
-    //    /// <remarks>
-    //    /// Turnbased rooms should be created with this check turned on! They should also use custom authentication.
-    //    /// Disabled by default for backwards-compatibility.
-    //    /// </remarks>
-    //    public bool CheckUserOnJoin = false;
 
-    //    /// <summary>Removes a user's events and properties from the room when a user leaves.</summary>
-    //    /// <remarks>
-    //    /// This makes sense when in rooms where players can't place items in the room and just vanish entirely.
-    //    /// When you disable this, the event history can become too long to load if the room stays in use indefinitely.
-    //    /// Default: true. Cleans up the cache and props of leaving users.
-    //    /// </remarks>
-    //    public bool CleanupCacheOnLeave = true;
+        /// <summary>Time To Live (TTL) for a room when the last player leaves. Keeps room in memory for case a player re-joins soon. In milliseconds.</summary>
+        //public int EmptyRoomTtl;
 
-    //    /// <summary>The room's custom properties to set. Use string keys!</summary>
-    //    /// <remarks>
-    //    /// Custom room properties are any key-values you need to define the game's setup.
-    //    /// The shorter your keys are, the better.
-    //    /// Example: Map, Mode (could be "m" when used with "Map"), TileSet (could be "t").
-    //    /// </remarks>
-    //    public Hashtable CustomRoomProperties;
+        ///// <summary>Activates UserId checks on joining - allowing a users to be only once in the room.</summary>
+        ///// <remarks>
+        ///// Turnbased rooms should be created with this check turned on! They should also use custom authentication.
+        ///// Disabled by default for backwards-compatibility.
+        ///// </remarks>
+        //public bool checkUserOnJoin { get { return this.checkUserOnJoinField; } set { this.checkUserOnJoinField = value; } }
+        //private bool checkUserOnJoinField = false;
 
-    //    /// <summary>Defines the custom room properties that get listed in the lobby.</summary>
-    //    /// <remarks>
-    //    /// Name the custom room properties that should be available to clients that are in a lobby.
-    //    /// Use with care. Unless a custom property is essential for matchmaking or user info, it should
-    //    /// not be sent to the lobby, which causes traffic and delays for clients in the lobby.
-    //    ///
-    //    /// Default: No custom properties are sent to the lobby.
-    //    /// </remarks>
-    //    public string[] CustomRoomPropertiesForLobby = new string[0];
+        /// <summary>Removes a user's events and properties from the room when a user leaves.</summary>
+        /// <remarks>
+        /// This makes sense when in rooms where players can't place items in the room and just vanish entirely.
+        /// When you disable this, the event history can become too long to load if the room stays in use indefinitely.
+        /// Default: true. Cleans up the cache and props of leaving users.
+        /// </remarks>
+        public bool cleanupCacheOnLeave { get { return this.cleanupCacheOnLeaveField; } set { this.cleanupCacheOnLeaveField = value; } }
+        private bool cleanupCacheOnLeaveField = PhotonNetwork.autoCleanUpPlayerObjects;
 
-    //    /// <summary>Informs the server of the expected plugin setup.</summary>
-    //    /// <remarks>
-    //    /// The operation will fail in case of a plugin missmatch returning error code PluginMismatch 32757(0x7FFF - 10).
-    //    /// Setting string[]{} means the client expects no plugin to be setup.
-    //    /// Note: for backwards compatibility null omits any check.
-    //    /// </remarks>
-    //    public string[] Plugins;
+        /// <summary>The room's custom properties to set. Use string keys!</summary>
+        /// <remarks>
+        /// Custom room properties are any key-values you need to define the game's setup.
+        /// The shorter your keys are, the better.
+        /// Example: Map, Mode (could be "m" when used with "Map"), TileSet (could be "t").
+        /// </remarks>
+        public Hashtable customRoomProperties;
 
-    //    /// <summary>
-    //    /// Tells the server to skip room events for joining and leaving players.
-    //    /// </summary>
-    //    /// <remarks>
-    //    /// Using this makes the client unaware of the other players in a room.
-    //    /// That can save some traffic if you have some server logic that updates players
-    //    /// but it can also limit the client's usability.
-    //    /// PUN will break, if you use this.
-    //    /// </remarks>
-    //    public bool SuppressRoomEvents;
+        /// <summary>Defines the custom room properties that get listed in the lobby.</summary>
+        /// <remarks>
+        /// Name the custom room properties that should be available to clients that are in a lobby.
+        /// Use with care. Unless a custom property is essential for matchmaking or user info, it should
+        /// not be sent to the lobby, which causes traffic and delays for clients in the lobby.
+        ///
+        /// Default: No custom properties are sent to the lobby.
+        /// </remarks>
+        public string[] customRoomPropertiesForLobby = new string[0];
 
-    //    /// <summary>
-    //    /// Defines if the UserIds of players get "published" in the room. Useful for FindFriends, if players want to play another game together.
-    //    /// </summary>
-    //    public bool PublishUserId;
-}
+        /// <summary>Informs the server of the expected plugin setup.</summary>
+        /// <remarks>
+        /// The operation will fail in case of a plugin missmatch returning error code PluginMismatch 32757(0x7FFF - 10).
+        /// Setting string[]{} means the client expects no plugin to be setup.
+        /// Note: for backwards compatibility null omits any check.
+        /// </remarks>
+        public string[] plugins;
+
+        /// <summary>
+        /// Tells the server to skip room events for joining and leaving players.
+        /// </summary>
+        /// <remarks>
+        /// Using this makes the client unaware of the other players in a room.
+        /// That can save some traffic if you have some server logic that updates players
+        /// but it can also limit the client's usability.
+        ///
+        /// PUN will break if you use this, so it's not settable.
+        /// </remarks>
+        public bool suppressRoomEvents { get { return this.suppressRoomEventsField; } /*set { this.suppressRoomEventsField = value; }*/ }
+        private bool suppressRoomEventsField = false;
+
+        /// <summary>
+        /// Defines if the UserIds of players get "published" in the room. Useful for FindFriends, if players want to play another game together.
+        /// </summary>
+        /// <remarks>
+        /// When you set this to true, Photon will publish the UserIds of the players in that room.
+        /// In that case, you can use PhotonPlayer.userId, to access any player's userID.
+        /// This is useful for FindFriends and to set "expected users" to reserve slots in a room (see PhotonNetwork.JoinRoom e.g.).
+        /// </remarks>
+        public bool publishUserId { get { return this.publishUserIdField; } set { this.publishUserIdField = value; } }
+        private bool publishUserIdField = false;
+    }
 
 
     /// <summary>Aggregates several less-often used options for operation RaiseEvent. See field descriptions for usage details.</summary>
@@ -1502,7 +1533,7 @@ namespace ExitGames.Client.Photon
     /// values to Photon which will verify them before granting access or disconnecting the client.
     ///
     /// The Photon Cloud Dashboard will let you enable this feature and set important server values for it.
-    /// https://www.exitgames.com/dashboard
+    /// https://www.photonengine.com/dashboard
     /// </remarks>
     public class AuthenticationValues
     {
@@ -1543,7 +1574,7 @@ namespace ExitGames.Client.Photon
         }
 
         /// <summary>Sets the data to be passed-on to the auth service via POST.</summary>
-        /// <param name="stringData">String data to be sent in the body of the POST request. An empty string will set the post data to null.</param>
+        /// <param name="stringData">String data to be used in the body of the POST request. Null or empty string will set AuthPostData to null.</param>
         public virtual void SetAuthPostData(string stringData)
         {
             this.AuthPostData = (string.IsNullOrEmpty(stringData)) ? null : stringData;
@@ -1568,6 +1599,6 @@ namespace ExitGames.Client.Photon
 
         public override string ToString()
         {
-                return string.Format("AuthenticationValues UserId: {0}, GetParameters: {1} Token available: {2}", this.UserId, this.AuthGetParameters, this.Token != null);
+            return string.Format("AuthenticationValues UserId: {0}, GetParameters: {1} Token available: {2}", this.UserId, this.AuthGetParameters, this.Token != null);
         }
     }

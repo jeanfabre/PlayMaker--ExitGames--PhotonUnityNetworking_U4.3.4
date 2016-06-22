@@ -20,21 +20,6 @@ using UnityEngine;
 /// \ingroup publicApi
 public class Room : RoomInfo
 {
-    /// <summary>Count of players in this room.</summary>
-    public new int playerCount
-    {
-        get
-        {
-            if (PhotonNetwork.playerList != null)
-            {
-                return PhotonNetwork.playerList.Length;
-            }
-            else
-            {
-                return 0;
-            }
-        }
-    }
 
 
     /// <summary>The name of a room. Unique identifier (per Loadbalancing group) for a room/match.</summary>
@@ -48,39 +33,6 @@ public class Room : RoomInfo
         internal set
         {
             this.nameField = value;
-        }
-    }
-
-    /// <summary>
-    /// Sets a limit of players to this room. This property is shown in lobby, too.
-    /// If the room is full (players count == maxplayers), joining this room will fail.
-    /// </summary>
-    public new int maxPlayers
-    {
-        get
-        {
-            return (int)this.maxPlayersField;
-        }
-
-        set
-        {
-            if (!this.Equals(PhotonNetwork.room))
-            {
-                UnityEngine.Debug.LogWarning("Can't set maxPlayers when not in that room.");
-            }
-
-            if (value > 255)
-            {
-                UnityEngine.Debug.LogWarning("Can't set Room.maxPlayers to: " + value + ". Using max value: 255.");
-                value = 255;
-            }
-
-            if (value != this.maxPlayersField && !PhotonNetwork.offlineMode)
-            {
-                PhotonNetwork.networkingPeer.OpSetPropertiesOfRoom(new Hashtable() { { GamePropertyKey.MaxPlayers, (byte)value } }, expectedProperties: null, webForward: false);
-            }
-
-            this.maxPlayersField = (byte)value;
         }
     }
 
@@ -159,6 +111,57 @@ public class Room : RoomInfo
         }
     }
 
+
+    /// <summary>
+    /// Sets a limit of players to this room. This property is shown in lobby, too.
+    /// If the room is full (players count == maxplayers), joining this room will fail.
+    /// </summary>
+    public new int maxPlayers
+    {
+        get
+        {
+            return (int)this.maxPlayersField;
+        }
+
+        set
+        {
+            if (!this.Equals(PhotonNetwork.room))
+            {
+                UnityEngine.Debug.LogWarning("Can't set maxPlayers when not in that room.");
+            }
+
+            if (value > 255)
+            {
+                UnityEngine.Debug.LogWarning("Can't set Room.maxPlayers to: " + value + ". Using max value: 255.");
+                value = 255;
+            }
+
+            if (value != this.maxPlayersField && !PhotonNetwork.offlineMode)
+            {
+                PhotonNetwork.networkingPeer.OpSetPropertiesOfRoom(new Hashtable() { { GamePropertyKey.MaxPlayers, (byte)value } }, expectedProperties: null, webForward: false);
+            }
+
+            this.maxPlayersField = (byte)value;
+        }
+    }
+
+
+    /// <summary>Count of players in this room.</summary>
+    public new int playerCount
+    {
+        get
+        {
+            if (PhotonNetwork.playerList != null)
+            {
+                return PhotonNetwork.playerList.Length;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+    }
+
     /// <summary>
     /// List of users who are expected to join this room. In matchmaking, Photon blocks a slot for each of these UserIDs out of the MaxPlayers.
     /// </summary>
@@ -204,47 +207,47 @@ public class Room : RoomInfo
 
 
     /// <summary>
-    /// Updates the current room's Custom Properties with new/updated key-values. 
+    /// Updates the current room's Custom Properties with new/updated key-values.
     /// </summary>
     /// <remarks>
     /// Custom Properties are a key-value set (Hashtable) which is available to all players in a room.
-    /// They can relate to the room or individual players and are useful when only the current value 
+    /// They can relate to the room or individual players and are useful when only the current value
     /// of something is of interest. For example: The map of a room.
     /// All keys must be strings.
-    /// 
+    ///
     /// The Room and the PhotonPlayer class both have SetCustomProperties methods.
     /// Also, both classes offer access to current key-values by: customProperties.
-    /// 
-    /// Always use SetCustomProperties to change values. 
+    ///
+    /// Always use SetCustomProperties to change values.
     /// To reduce network traffic, set only values that actually changed.
     /// New properties are added, existing values are updated.
     /// Other values will not be changed, so only provide values that changed or are new.
-    /// 
+    ///
     /// To delete a named (custom) property of this room, use null as value.
-    /// 
-    /// Locally, SetCustomProperties will update it's cache without delay. 
+    ///
+    /// Locally, SetCustomProperties will update it's cache without delay.
     /// Other clients are updated through Photon (the server) with a fitting operation.
-    /// 
+    ///
     /// <b>Check and Swap</b>
-    /// 
-    /// SetCustomProperties have the option to do a server-side Check-And-Swap (CAS): 
+    ///
+    /// SetCustomProperties have the option to do a server-side Check-And-Swap (CAS):
     /// Values only get updated if the expected values are correct.
-    /// The expectedValues can be different key/values than the propertiesToSet. So you can 
+    /// The expectedValues can be different key/values than the propertiesToSet. So you can
     /// check some key and set another key's value (if the check succeeds).
-    /// 
+    ///
     /// If the client's knowledge of properties is wrong or outdated, it can't set values with CAS.
     /// This can be useful to keep players from concurrently setting values. For example: If all players
-    /// try to pickup some card or item, only one should get it. With CAS, only the first SetProperties 
+    /// try to pickup some card or item, only one should get it. With CAS, only the first SetProperties
     /// gets executed server-side and any other (sent at the same time) fails.
-    /// 
-    /// The server will broadcast successfully changed values and the local "cache" of customProperties 
+    ///
+    /// The server will broadcast successfully changed values and the local "cache" of customProperties
     /// only gets updated after a roundtrip (if anything changed).
-    /// 
-    /// You can do a "webForward": Photon will send the changed properties to a WebHook defined 
+    ///
+    /// You can do a "webForward": Photon will send the changed properties to a WebHook defined
     /// for your application.
-    /// 
+    ///
     /// <b>OfflineMode</b>
-    /// 
+    ///
     /// While PhotonNetwork.offlineMode is true, the expectedValues and webForward parameters are ignored.
     /// In OfflineMode, the local customProperties values are immediately updated (without the roundtrip).
     /// </remarks>
@@ -301,9 +304,9 @@ public class Room : RoomInfo
     /// <remarks>
     /// Note that this operation can conflict with new/other users joining. They might be
     /// adding users to the list of expected users before or after this client called ClearExpectedUsers.
-    /// 
+    ///
     /// This room's expectedUsers value will update, when the server sends a successful update.
-    /// 
+    ///
     /// Internals: This methods wraps up setting the ExpectedUsers property of a room.
     /// </remarks>
     public void ClearExpectedUsers()

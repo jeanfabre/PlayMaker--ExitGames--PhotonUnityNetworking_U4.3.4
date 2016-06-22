@@ -19,7 +19,7 @@ using SupportClassPun = ExitGames.Client.Photon.SupportClass;
 /// Implements Photon LoadBalancing used in PUN.
 /// This class is used internally by PhotonNetwork and not intended as public API.
 /// </summary>
-internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
+internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
 {
     /// <summary>Combination of GameVersion+"_"+PunVersion. Separates players per app by version.</summary>
     protected internal string mAppVersionPun
@@ -56,7 +56,7 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
     public string mGameserver { get; internal set; }
 
     /// <summary>The server this client is currently connected or connecting to.</summary>
-    internal protected ServerConnection server { get; private set; }
+    protected internal ServerConnection server { get; private set; }
 
     public PeerState State { get; internal set; }
 
@@ -153,7 +153,7 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
     // isLocalClientInside becomes true when op join result is positive on GameServer
     private bool mPlayernameHasToBeUpdated;
 
-    internal protected EnterRoomParams enterRoomParamsCache;
+    protected internal EnterRoomParams enterRoomParamsCache;
 
     private JoinType mLastJoinType;
 
@@ -721,8 +721,9 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
         this.mActors.Values.CopyTo(this.mPlayerListCopy, 0);
 
         List<PhotonPlayer> otherP = new List<PhotonPlayer>();
-        foreach (PhotonPlayer player in this.mPlayerListCopy)
+        for (int i = 0; i < this.mPlayerListCopy.Length; i++)
         {
+            PhotonPlayer player = this.mPlayerListCopy[i];
             if (!player.isLocal)
             {
                 otherP.Add(player);
@@ -1954,10 +1955,10 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
                 {
                     this.mGameList = new Dictionary<string, RoomInfo>();
                     Hashtable games = (Hashtable)photonEvent[ParameterCode.GameList];
-                    foreach (DictionaryEntry game in games)
+                    foreach (var gameKey in games.Keys)
                     {
-                        string gameName = (string)game.Key;
-                        this.mGameList[gameName] = new RoomInfo(gameName, (Hashtable)game.Value);
+                        string gameName = (string)gameKey;
+                        this.mGameList[gameName] = new RoomInfo(gameName, (Hashtable)games[gameKey]);
                     }
                     mGameListCopy = new RoomInfo[mGameList.Count];
                     mGameList.Values.CopyTo(mGameListCopy, 0);
@@ -1968,10 +1969,10 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
             case EventCode.GameListUpdate:
                 {
                     Hashtable games = (Hashtable)photonEvent[ParameterCode.GameList];
-                    foreach (DictionaryEntry room in games)
+                    foreach (var roomKey in games.Keys)
                     {
-                        string gameName = (string)room.Key;
-                        RoomInfo game = new RoomInfo(gameName, (Hashtable)room.Value);
+                        string gameName = (string)roomKey;
+                        RoomInfo game = new RoomInfo(gameName, (Hashtable)games[roomKey]);
                         if (game.removedFromList)
                         {
                             this.mGameList.Remove(gameName);
@@ -2066,14 +2067,15 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
 
                 int remoteUpdateServerTimestamp = (int)serializeData[(byte)0];
                 short remoteLevelPrefix = -1;
-                short initialDataIndex = 1;
+                short initialDataIndex = 10;
+                int headerLength = 1;
                 if (serializeData.ContainsKey((byte)1))
                 {
                     remoteLevelPrefix = (short)serializeData[(byte)1];
-                    initialDataIndex = 2;
+                    headerLength = 2;
                 }
 
-                for (short s = initialDataIndex; s < serializeData.Count; s++)
+                for (short s = initialDataIndex; s - initialDataIndex < serializeData.Count - headerLength; s++)
                 {
                     this.OnSerializeRead(serializeData[s] as object[], originatingPlayer, remoteUpdateServerTimestamp, remoteLevelPrefix);
                 }
@@ -3009,8 +3011,9 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
         {
             PhotonView[] views = GameObject.FindObjectsOfType(typeof(PhotonView)) as PhotonView[];
 
-            foreach (PhotonView view in views)
+            for (int i = 0; i < views.Length; i++)
             {
+                PhotonView view = views[i];
                 if (view.viewID == viewID)
                 {
                     if (view.didAwake)
@@ -3159,9 +3162,8 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
 
     public void RemoveRPCsInGroup(int group)
     {
-        foreach (KeyValuePair<int, PhotonView> kvp in this.photonViewList)
+        foreach (PhotonView view in this.photonViewList.Values)
         {
-            PhotonView view = kvp.Value;
             if (view.group == group)
             {
                 this.CleanRpcBufferIfMine(view);
@@ -3179,59 +3181,6 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
         //}
     }
 
-    internal void RPC(PhotonView view, string methodName, PhotonPlayer player, bool encrypt, params object[] parameters)
-    {
-        if (this.blockSendingGroups.Contains(view.group))
-        {
-            return; // Block sending on this group
-        }
-
-        if (view.viewID < 1)    //TODO: check why 0 should be illegal
-        {
-            Debug.LogError("Illegal view ID:" + view.viewID + " method: " + methodName + " GO:" + view.gameObject.name);
-        }
-
-        if (PhotonNetwork.logLevel >= PhotonLogLevel.Full)
-        {
-            Debug.Log("Sending RPC \"" + methodName + "\" to player[" + player + "]");
-        }
-
-
-        //ts: changed RPCs to a one-level hashtable as described in internal.txt
-        Hashtable rpcEvent = new Hashtable();
-        rpcEvent[(byte)0] = (int)view.viewID; // LIMITS PHOTONVIEWS&PLAYERS
-        if (view.prefix > 0)
-        {
-            rpcEvent[(byte)1] = (short)view.prefix;
-        }
-        rpcEvent[(byte)2] = PhotonNetwork.ServerTimestamp;
-
-        // send name or shortcut (if available)
-        int shortcut = 0;
-        if (rpcShortcuts.TryGetValue(methodName, out shortcut))
-        {
-            rpcEvent[(byte)5] = (byte)shortcut; // LIMITS RPC COUNT
-        }
-        else
-        {
-            rpcEvent[(byte)3] = methodName;
-        }
-
-        if (parameters != null && parameters.Length > 0)
-        {
-            rpcEvent[(byte) 4] = (object[]) parameters;
-        }
-
-        if (this.mLocalActor.ID == player.ID)
-        {
-            this.ExecuteRpc(rpcEvent, player);
-        }
-        else
-        {
-            RaiseEventOptions options = new RaiseEventOptions() { TargetActors = new int[] { player.ID }, Encrypt = encrypt };
-            this.OpRaiseEvent(PunEvent.RPC, rpcEvent, true, options);
-        }
-    }
 
     /// RPC Hashtable Structure
     /// (byte)0 -> (int) ViewId (combined from actorNr and actor-unique-id)
@@ -3243,7 +3192,7 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
     ///
     /// This is sent as event (code: 200) which will contain a sender (origin of this RPC).
 
-    internal void RPC(PhotonView view, string methodName, PhotonTargets target, bool encrypt, params object[] parameters)
+    internal void RPC(PhotonView view, string methodName, PhotonTargets target, PhotonPlayer player, bool encrypt, params object[] parameters)
     {
         if (this.blockSendingGroups.Contains(view.group))
         {
@@ -3256,7 +3205,9 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
         }
 
         if (PhotonNetwork.logLevel >= PhotonLogLevel.Full)
-            Debug.Log("Sending RPC \"" + methodName + "\" to " + target);
+        {
+            Debug.Log("Sending RPC \"" + methodName + "\" to target: " + target + " or player:" + player + ".");
+        }
 
 
         //ts: changed RPCs to a one-level hashtable as described in internal.txt
@@ -3285,7 +3236,24 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
             rpcEvent[(byte)4] = (object[])parameters;
         }
 
-        // Check scoping
+
+        // if sent to target player, this overrides the target
+        if (player != null)
+        {
+            if (this.mLocalActor.ID == player.ID)
+            {
+                this.ExecuteRpc(rpcEvent, player);
+            }
+            else
+            {
+                RaiseEventOptions options = new RaiseEventOptions() { TargetActors = new int[] { player.ID }, Encrypt = encrypt };
+                this.OpRaiseEvent(PunEvent.RPC, rpcEvent, true, options);
+            }
+
+            return;
+        }
+
+        // send to a specific set of players
         if (target == PhotonTargets.All)
         {
             RaiseEventOptions options = new RaiseEventOptions() { InterestGroup = (byte)view.group, Encrypt = encrypt };
@@ -3467,12 +3435,11 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
         // Debug.Log("OnLevelWasLoaded photonViewList.Count: " + photonViewList.Count); // Exit Games internal log
 
         List<int> removeKeys = new List<int>();
-        foreach (KeyValuePair<int, PhotonView> kvp in this.photonViewList)
+        foreach (PhotonView view in this.photonViewList.Values)
         {
-            PhotonView view = kvp.Value;
             if (view == null)
             {
-                removeKeys.Add(kvp.Key);
+                removeKeys.Add(view.viewID);
             }
         }
 
@@ -3498,7 +3465,7 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
             return;
         }
 
-        if (this.mActors == null 
+        if (this.mActors == null
 #if !PHOTON_DEVELOP
 		    ||
             this.mActors.Count <= 1
@@ -3508,20 +3475,18 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
             return; // No need to send OnSerialize messages (these are never buffered anyway)
         }
 
-        dataPerGroupReliable.Clear();
-        dataPerGroupUnreliable.Clear();
 
         /* Format of the data hashtable:
          * Hasthable dataPergroup*
          *  [(byte)0] = PhotonNetwork.ServerTimestamp;
-         *  OPTIONAL: [(byte)1] = currentLevelPrefix;
-         *  +  data
+         *  [(byte)1] = currentLevelPrefix;  OPTIONAL!
+         *
+         *  [(short)10] = data 1
+         *  [(short)11] = data 2 ...
          */
 
-        foreach (KeyValuePair<int, PhotonView> kvp in this.photonViewList)
+        foreach (PhotonView view in this.photonViewList.Values)
         {
-            PhotonView view = kvp.Value;
-
             if (view.synchronization != ViewSynchronization.Off)
             {
                 // Fetch all sending photonViews
@@ -3557,17 +3522,11 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
                         bool found = dataPerGroupReliable.TryGetValue(view.group, out groupHashtable);
                         if (!found)
                         {
-                            groupHashtable = new Hashtable(4);
-                            groupHashtable[(byte)0] = PhotonNetwork.ServerTimestamp;
-                            if (currentLevelPrefix >= 0)
-                            {
-                                groupHashtable[(byte)1] = this.currentLevelPrefix;
-                            }
-
+                            groupHashtable = new Hashtable(10);
                             dataPerGroupReliable[view.group] = groupHashtable;
                         }
 
-                        groupHashtable.Add((short)groupHashtable.Count, evData);
+                        groupHashtable.Add((short)(groupHashtable.Count+10), evData);
                     }
                     else
                     {
@@ -3575,17 +3534,11 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
                         bool found = dataPerGroupUnreliable.TryGetValue(view.group, out groupHashtable);
                         if (!found)
                         {
-                            groupHashtable = new Hashtable(4);
-                            groupHashtable[(byte)0] = PhotonNetwork.ServerTimestamp;
-                            if (currentLevelPrefix >= 0)
-                            {
-                                groupHashtable[(byte)1] = this.currentLevelPrefix;
-                            }
-
+                            groupHashtable = new Hashtable(10);
                             dataPerGroupUnreliable[view.group] = groupHashtable;
                         }
 
-                        groupHashtable.Add((short)groupHashtable.Count, evData);
+                        groupHashtable.Add((short)(groupHashtable.Count+10), evData);
                     }
                 }
                 else
@@ -3605,17 +3558,39 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
         options.Receivers = ReceiverGroup.All;
 #endif
 
-        foreach (KeyValuePair<int, Hashtable> kvp in dataPerGroupReliable)
+        foreach (int groupId in dataPerGroupReliable.Keys)
         {
-            options.InterestGroup = (byte)kvp.Key;
-            this.OpRaiseEvent(PunEvent.SendSerializeReliable, kvp.Value, true, options);
+            options.InterestGroup = (byte)groupId;
+            Hashtable groupHashtable = this.dataPerGroupReliable[groupId];
+
+            groupHashtable[(byte)0] = PhotonNetwork.ServerTimestamp;
+            if (currentLevelPrefix >= 0)
+            {
+                groupHashtable[(byte)1] = this.currentLevelPrefix;
+            }
+
+            this.OpRaiseEvent(PunEvent.SendSerializeReliable, groupHashtable, true, options);
+            groupHashtable.Clear();
         }
-        foreach (KeyValuePair<int, Hashtable> kvp in dataPerGroupUnreliable)
+        foreach (int groupId in dataPerGroupUnreliable.Keys)
         {
-            options.InterestGroup = (byte)kvp.Key;
-            this.OpRaiseEvent(PunEvent.SendSerialize, kvp.Value, false, options);
+            options.InterestGroup = (byte)groupId;
+            Hashtable groupHashtable = this.dataPerGroupUnreliable[groupId];
+
+            groupHashtable[(byte)0] = PhotonNetwork.ServerTimestamp;
+            if (currentLevelPrefix >= 0)
+            {
+                groupHashtable[(byte)1] = this.currentLevelPrefix;
+            }
+
+            this.OpRaiseEvent(PunEvent.SendSerialize, groupHashtable, false, options);
+            groupHashtable.Clear();
         }
     }
+
+
+
+
 
 
     // calls OnPhotonSerializeView (through ExecuteOnSerialize)
@@ -3690,7 +3665,8 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
 
 
 	string LogObjectArray(object[] data)
-    {
+	{
+	    if (data == null) return "null";
         string[] sb = new string[data.Length];
         for (int i = 0; i < data.Length; i++)
         {
@@ -3753,17 +3729,17 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
             data = uncompressed;
         }
 
-        // TODO: check if we really want to set the owner of a GO, based on who sends something about it.
-        // this has nothing to do with reading the actual synchronization update.
-        if (sender.ID != view.ownerId)
-        {
-            if (!view.isSceneView || !sender.isMasterClient)
-            {
-                // obviously the owner changed and we didn't yet notice.
-                Debug.Log("Adjusting owner to sender of updates. From: " + view.ownerId + " to: " + sender.ID);
-                view.ownerId = sender.ID;
-            }
-        }
+        //// TODO: check if we really want to set the owner of a GO, based on who sends something about it.
+        //// this has nothing to do with reading the actual synchronization update.
+        //if (sender.ID != view.ownerId)
+        //{
+        //    if (!view.isSceneView || !sender.isMasterClient)
+        //    {
+        //        // obviously the owner changed and we didn't yet notice.
+        //        Debug.Log("Adjusting owner to sender of updates. From: " + view.ownerId + " to: " + sender.ID);
+        //        view.ownerId = sender.ID;
+        //    }
+        //}
 
         PhotonStream pStream = new PhotonStream(false, data);
         pStream.currentItem = 3;
@@ -3798,10 +3774,11 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
     }
 
 
-    // compresses currentContent array into containing NULL, where currentContent equals previousContent
-    // skips initial indexes, as defined by startIndex
+    // compresses currentContent by using NULL as value if currentContent equals previousContent
+    // skips initial indexes, as defined by SyncFirstValue
+    // to conserve memory, the previousContent is re-used as buffer for the result! duplicate the values before using this, if needed
     // returns null, if nothing must be sent (current content might be null, which also returns null)
-    // startIndex should be the index of the first actual data-value (3 in PUN's case, as 0=viewId, 1=(bool)compressed, 2=(int[])values that are now null)
+    // SyncFirstValue should be the index of the first actual data-value (3 in PUN's case, as 0=viewId, 1=(bool)compressed, 2=(int[])values that are now null)
     private object[] DeltaCompressionWrite(object[] previousContent, object[] currentContent)
     {
         if (currentContent == null || previousContent == null || previousContent.Length != currentContent.Length)
@@ -3815,11 +3792,11 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
         }
 
 
-        object[] compressedContent = new object[currentContent.Length];
+        object[] compressedContent = previousContent;   // the previous content is no longer needed, once we compared the values!
         compressedContent[SyncCompressed] = false;
         int compressedValues = 0;
 
-        HashSet<int> valuesThatAreChangedToNull = new HashSet<int>();
+        Queue<int> valuesThatAreChangedToNull = null;
         for (int index = SyncFirstValue; index < currentContent.Length; index++)
         {
             object newObj = currentContent[index];
@@ -3828,7 +3805,7 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
             {
                 // compress (by using null, instead of value, which is same as before)
                 compressedValues++;
-                // compressedContent[index] is already null (initialized)
+                compressedContent[index] = null;
             }
             else
             {
@@ -3838,7 +3815,11 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
                 // new value is null (like a compressed value): we have to mark it so it STAYS null instead of being replaced with previous value
                 if (newObj == null)
                 {
-                    valuesThatAreChangedToNull.Add(index);
+                    if (valuesThatAreChangedToNull == null)
+                    {
+                        valuesThatAreChangedToNull = new Queue<int>(currentContent.Length);
+                    }
+                    valuesThatAreChangedToNull.Enqueue(index);
                 }
             }
         }
@@ -3853,7 +3834,7 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
             }
 
             compressedContent[SyncCompressed] = true;
-            if (valuesThatAreChangedToNull.Count > 0)
+            if (valuesThatAreChangedToNull != null)
             {
                 compressedContent[SyncNullValues] = valuesThatAreChangedToNull.ToArray(); // data that is actually null (not just cause we didn't want to send it)
             }
