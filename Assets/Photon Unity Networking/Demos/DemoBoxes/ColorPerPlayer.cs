@@ -133,7 +133,7 @@ public class ColorPerPlayer : PunBehaviour
             if (player.customProperties.ContainsKey(ColorProp))
             {
                 int picked = (int)player.customProperties[ColorProp];
-                Debug.Log("Taken color index: " + picked);
+                //Debug.Log("Taken color index: " + picked);
                 takenColors.Add(picked);
             }
             else
@@ -142,13 +142,13 @@ public class ColorPerPlayer : PunBehaviour
                 // we will wait to avoid clashes when 2 players join soon after another. we don't want a color picked twice!
                 if (player.ID < PhotonNetwork.player.ID)
                 {
-                    Debug.Log("Can't select a color yet. This player has to pick one first: " + player);
+                    //Debug.Log("Can't select a color yet. This player has to pick one first: " + player);
                     return;
                 }
             }
         }
 
-        //Debug.Log("Taken colors: " + takenColors.Count);
+        ////Debug.Log("Taken colors: " + takenColors.Count);
 
         if (takenColors.Count == this.Colors.Length)
         {
@@ -170,7 +170,7 @@ public class ColorPerPlayer : PunBehaviour
                 colorProp.Add(ColorProp, index);
                 PhotonNetwork.player.SetCustomProperties(colorProp); // this goes to the server asap.
 
-                Debug.Log("Selected my color: " + this.MyColor);
+                //Debug.Log("Selected my color: " + this.MyColor);
                 ColorPicked = true;
                 break; // one color selected. break this loop.
             }
