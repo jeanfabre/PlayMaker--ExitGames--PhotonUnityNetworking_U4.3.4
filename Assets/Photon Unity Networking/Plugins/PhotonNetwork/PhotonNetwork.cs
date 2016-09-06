@@ -28,7 +28,7 @@ using System.IO;
 public static class PhotonNetwork
 {
     /// <summary>Version number of PUN. Also used in GameVersion to separate client version from each other.</summary>
-    public const string versionPUN = "1.74";
+    public const string versionPUN = "1.75";
 
     /// <summary>Version string for your this build. Can be used to separate incompatible clients. Sent during connect.</summary>
     /// <remarks>This is only sent when you connect so that is also the place you set it usually (e.g. in ConnectUsingSettings).</remarks>
@@ -726,7 +726,7 @@ public static class PhotonNetwork
         {
             if (value > sendRate)
             {
-                Debug.LogError("Error, can not set the OnSerialize SendRate more often then the overall SendRate");
+                Debug.LogError("Error: Can not set the OnSerialize rate higher than the overall SendRate.");
                 value = sendRate;
             }
 

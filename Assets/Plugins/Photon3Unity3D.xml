@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <doc>
     <assembly>
-        <name>Photon3Unity3d</name>
+        <name>Photon3Unity3D</name>
     </assembly>
     <members>
         <member name="T:ExitGames.Client.Photon.Hashtable">

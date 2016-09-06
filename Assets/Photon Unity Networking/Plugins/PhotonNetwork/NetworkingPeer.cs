@@ -408,19 +408,20 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
 
     private HashSet<int> blockSendingGroups = new HashSet<int>();
 
-    internal protected Dictionary<int, PhotonView> photonViewList = new Dictionary<int, PhotonView>(); //TODO: make private again
+    protected internal Dictionary<int, PhotonView> photonViewList = new Dictionary<int, PhotonView>(); //TODO: make private again
 
-    private readonly PhotonStream pStream = new PhotonStream(true, null);                                            // only used in OnSerializeWrite()
+    private readonly PhotonStream readStream = new PhotonStream(false, null);    // only used in OnSerializeRead()
+    private readonly PhotonStream pStream = new PhotonStream(true, null);        // only used in OnSerializeWrite()
     private readonly Dictionary<int, Hashtable> dataPerGroupReliable = new Dictionary<int, Hashtable>();    // only used in RunViewUpdate()
     private readonly Dictionary<int, Hashtable> dataPerGroupUnreliable = new Dictionary<int, Hashtable>();  // only used in RunViewUpdate()
 
-    internal protected short currentLevelPrefix = 0;
+    protected internal short currentLevelPrefix = 0;
 
     /// <summary>Internally used to flag if the message queue was disabled by a "scene sync" situation (to re-enable it).</summary>
-    internal protected bool loadingLevelAndPausedNetwork = false;
+    protected internal bool loadingLevelAndPausedNetwork = false;
 
     /// <summary>For automatic scene syncing, the loaded scene is put into a room property. This is the name of said prop.</summary>
-    internal protected const string CurrentSceneProperty = "curScn";
+    protected internal const string CurrentSceneProperty = "curScn";
 
     public static bool UsePrefabCache = true;
 
@@ -433,7 +434,7 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
     private readonly Dictionary<string, int> rpcShortcuts;  // lookup "table" for the index (shortcut) of an RPC name
 
     /// <summary>Caches PhotonNetworkingMessage.OnPhotonInstantiate.ToString(), because DoInstantiate calls it often (and ToString() on the enum is astonishingly expensive).</summary>
-    private static readonly string onPhotonInstantiateString = PhotonNetworkingMessage.OnPhotonInstantiate.ToString();
+    private static readonly string OnPhotonInstantiateString = PhotonNetworkingMessage.OnPhotonInstantiate.ToString();
 
 
     // TODO: CAS must be implemented for OfflineMode
@@ -552,6 +553,8 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
             return false;
         }
 
+        this.SetupProtocol(type);
+
         // connect might fail, if the DNS name can't be resolved or if no network connection is available
         bool connecting = base.Connect(serverAddress, "", this.TokenForInit);
 
@@ -639,7 +642,7 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
     protected internal void SetupProtocol(ServerConnection serverType)
     {
         ConnectionProtocol protocolOverride = this.TransportProtocol;
-        
+
         if (this.AuthMode == AuthModeOption.AuthOnceWss)
         {
             if (serverType != ServerConnection.NameServer)
@@ -679,13 +682,16 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
         // this automatically uses a separate assembly-file with Win8-style Socket usage (not possible in Editor)
         Debug.LogWarning("Using PingWindowsStore");
         PhotonHandler.PingImplementation = typeof(PingWindowsStore);    // but for ping, we have to set the implementation explicitly to Win 8 Store/Phone
-#endif
+        #endif
 
 
-#pragma warning disable 0162    // the library variant defines if we should use PUN's SocketUdp variant (at all)
+        #pragma warning disable 0162    // the library variant defines if we should use PUN's SocketUdp variant (at all)
         if (PhotonPeer.NoSocket)
         {
-            Debug.Log("This Photon3Unity3d.dll only allows UDP. TransportProtocol was: " + this.TransportProtocol + ". SocketImplementation: " + this.SocketImplementation);
+            if (this.TransportProtocol != ConnectionProtocol.Udp)
+            {
+                Debug.Log("This Photon3Unity3d.dll only allows UDP. TransportProtocol was: " + this.TransportProtocol + ". SocketImplementation: " + this.SocketImplementation);
+            }
             protocolOverride = ConnectionProtocol.Udp;
 
             #if !UNITY_EDITOR && (UNITY_PS3 || UNITY_ANDROID)
@@ -3000,7 +3006,7 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
 
             // Send OnPhotonInstantiate callback to newly created GO.
             // GO will be enabled when instantiated from Prefab and it does not matter if the script is enabled or disabled.
-            go.SendMessage(onPhotonInstantiateString, new PhotonMessageInfo(photonPlayer, serverTime, null), SendMessageOptions.DontRequireReceiver);
+            go.SendMessage(OnPhotonInstantiateString, new PhotonMessageInfo(photonPlayer, serverTime, null), SendMessageOptions.DontRequireReceiver);
             return go;
         }
         else
@@ -3061,11 +3067,11 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
 
             // Send OnPhotonInstantiate callback to newly created GO.
             // GO will be enabled when instantiated from Prefab and it does not matter if the script is enabled or disabled.
-            go.SendMessage(onPhotonInstantiateString, new PhotonMessageInfo(photonPlayer, serverTime, null), SendMessageOptions.DontRequireReceiver);
+            go.SendMessage(OnPhotonInstantiateString, new PhotonMessageInfo(photonPlayer, serverTime, null), SendMessageOptions.DontRequireReceiver);
             return go;
         }
     }
-    
+
     private Dictionary<int, object[]> tempInstantiationData = new Dictionary<int, object[]>();
 
     private void StoreInstantiationData(int instantiationId, object[] instantiationData)
@@ -4075,12 +4081,12 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
         //    }
         //}
 
-        PhotonStream pStream = new PhotonStream(false, data);
-        pStream.currentItem = 3;
+        this.readStream.SetReadStream(data, 3);
         PhotonMessageInfo info = new PhotonMessageInfo(sender, networkTime, view);
 
-        view.DeserializeView(pStream, info);
+        view.DeserializeView(this.readStream, info);
     }
+
 
     private bool AlmostEquals(object[] lastData, object[] currentContent)
     {

@@ -45,7 +45,7 @@ public class ColorPerPlayerApply : PunBehaviour
     {
         // we could easily check if properties change for the owner of this photonView
         // for simplicity of code, we just call ApplyColor()
-        this.ApplyColor();  
+        this.ApplyColor();
     }
 
 
