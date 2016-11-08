@@ -98,12 +98,13 @@ public static class TeamExtensions
         if (!PhotonNetwork.connectedAndReady)
         {
             Debug.LogWarning("JoinTeam was called in state: " + PhotonNetwork.connectionStateDetailed + ". Not connectedAndReady.");
+            return;
         }
 
-        PunTeams.Team currentTeam = PhotonNetwork.player.GetTeam();
+        PunTeams.Team currentTeam = player.GetTeam();
         if (currentTeam != team)
         {
-            PhotonNetwork.player.SetCustomProperties(new Hashtable() {{PunTeams.TeamPlayerProp, (byte) team}});
+            player.SetCustomProperties(new Hashtable() {{PunTeams.TeamPlayerProp, (byte) team}});
         }
     }
 }

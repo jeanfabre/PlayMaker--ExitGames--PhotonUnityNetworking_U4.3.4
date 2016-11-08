@@ -111,6 +111,11 @@ public class RpsCore : PunBehaviour, IPunTurnManagerCallbacks
 
     public void Update()
     {
+		// Check if we are out of context, which means we likely got back to the demo hub.
+		if (this.DisconnectedPanel ==null)
+		{
+			Destroy(this.gameObject);
+		}
 
         // for debugging, it's useful to have a few actions tied to keys:
         if (Input.GetKeyUp(KeyCode.L))

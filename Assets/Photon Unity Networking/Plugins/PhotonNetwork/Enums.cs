@@ -531,6 +531,9 @@ public enum EncryptionMode
     /// <summary>
     /// With this encryption mode for UDP, the connection gets setup and all further datagrams get encrypted almost entirely. On-demand message encryption (like in PayloadEncryption) is skipped.
     /// </summary>
+    /// <remarks>
+    /// This mode requires AuthOnce or AuthOnceWss as AuthMode!
+    /// </remarks>
     DatagramEncryption = 10,
 }
 

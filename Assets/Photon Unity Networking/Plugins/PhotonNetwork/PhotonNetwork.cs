@@ -28,7 +28,7 @@ using System.IO;
 public static class PhotonNetwork
 {
     /// <summary>Version number of PUN. Also used in GameVersion to separate client version from each other.</summary>
-    public const string versionPUN = "1.75";
+    public const string versionPUN = "1.78";
 
     /// <summary>Version string for your this build. Can be used to separate incompatible clients. Sent during connect.</summary>
     /// <remarks>This is only sent when you connect so that is also the place you set it usually (e.g. in ConnectUsingSettings).</remarks>
@@ -192,10 +192,12 @@ public static class PhotonNetwork
     public static ServerConnection Server { get { return (PhotonNetwork.networkingPeer != null) ? PhotonNetwork.networkingPeer.Server : ServerConnection.NameServer; } }
 
     /// <summary>
-    /// A user's authentication values used during connect for Custom Authentication with Photon (and a custom service/community).
-    /// Set these before calling Connect if you want custom authentication.
+    /// A user's authentication values used during connect.
     /// </summary>
     /// <remarks>
+    /// Set these before calling Connect if you want custom authentication.
+    /// These values set the userId, if and how that userId gets verified (server-side), etc..
+    /// 
     /// If authentication fails for any values, PUN will call your implementation of OnCustomAuthenticationFailed(string debugMsg).
     /// See: PhotonNetworkingMessage.OnCustomAuthenticationFailed
     /// </remarks>
@@ -845,22 +847,19 @@ public static class PhotonNetwork
     static Stopwatch startupStopwatch;
 
     /// <summary>
-    /// Defines how long PUN keeps running a "fallback thread" to keep the connection after Unity's OnApplicationPause(true) call.
+    /// Defines how many seconds PUN keeps the connection, after Unity's OnApplicationPause(true) call. Default: 60 seconds.
     /// </summary>
     /// <remarks>
-    /// If you set BackgroundTimeout PUN will stop keeping the connection, BackgroundTimeout seconds after OnApplicationPause(true) got called.
-    /// That means: After the set time, a regular timeout can happen.
-    /// Your application will notice that timeout when it becomes active again.
+    /// It's best practice to disconnect inactive apps/connections after a while but to also allow users to take calls, etc..
+    /// We think a reasonable backgroung timeout is 60 seconds.
+    /// 
+    /// To handle the timeout, implement: OnDisconnectedFromPhoton(), as usual. 
+    /// Your application will "notice" the background disconnect when it becomes active again (running the Update() loop).
+    /// 
+    /// If you need to separate this case from others, you need to track if the app was in the background 
+    /// (there is no special callback by PUN).
     ///
-    ///
-    /// To handle the timeout, implement: OnConnectionFail() (this case will use the cause: DisconnectByServerTimeout).
-    ///
-    ///
-    /// It's best practice to let inactive apps/connections time out after a while but allow taking calls, etc.
-    /// So a reasonable value should be found.
-    /// We think it could be 60 seconds.
-    ///
-    /// Set a value greater than 0.001f, if you want to limit how long an app can keep the connection in background.
+    /// A value below 0.1 seconds will disable this timeout (careful: connections can be kept indefinitely).
     ///
     ///
     /// Info:
@@ -874,7 +873,6 @@ public static class PhotonNetwork
     /// Unity's OnApplicationPause() callback is broken in some exports (Android) of some Unity versions.
     /// Make sure OnApplicationPause() gets the callbacks you'd expect on the platform you target!
     /// Check PhotonHandler.OnApplicationPause(bool pause), to see the implementation.
-    ///
     /// </remarks>
     public static float BackgroundTimeout = 60.0f;
 
@@ -1577,14 +1575,9 @@ public static class PhotonNetwork
     /// That list is initialized on first use of OpFindFriends (before that, it is null).
     /// To refresh the list, call FindFriends again (in 5 seconds or 10 or 20).
     ///
-    /// Users identify themselves by setting a unique username via PhotonNetwork.playerName
-    /// or by PhotonNetwork.AuthValues. The user id set in AuthValues overrides the playerName,
-    /// so make sure you know the ID your friends use to authenticate.
-    /// The AuthValues are sent in OpAuthenticate when you connect, so the AuthValues must be
-    /// set before you connect!
-    ///
-    /// Note: Changing a player's name doesn't make sense when using a friend list.
-    ///
+    /// Users identify themselves by setting a unique userId in the PhotonNetwork.AuthValues. 
+    /// See remarks of AuthenticationValues for info about how this is set and used.
+    /// 
     /// The list of friends must be fetched from some other source (not provided by Photon).
     ///
     ///

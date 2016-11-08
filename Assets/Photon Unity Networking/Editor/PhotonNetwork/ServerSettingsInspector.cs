@@ -107,7 +107,6 @@ public class ServerSettingsInspector : Editor
                 {
                     settings.ServerPort = EditorGUILayout.IntField("Server Port", settings.ServerPort);
                 }
-
                 // protocol
                 valProtocol = settings.Protocol == ConnectionProtocol.Tcp ? ProtocolChoices.Tcp : ProtocolChoices.Udp;
                 valProtocol = (ProtocolChoices) EditorGUILayout.EnumPopup("Protocol", valProtocol);
@@ -188,17 +187,34 @@ public class ServerSettingsInspector : Editor
 #if PHOTON_VOICE
         GUILayout.Space(20);
         EditorGUILayout.LabelField("Photon Voice Settings");
-        // voice appid
-        string valVoiceAppId = EditorGUILayout.TextField("Voice AppId", settings.VoiceAppID);
-        if (valVoiceAppId != settings.VoiceAppID)
+        switch (settings.HostType)
         {
-            settings.VoiceAppID = valVoiceAppId;
-            this.showVoiceAppIdHint = !IsAppId(settings.VoiceAppID);
+            case ServerSettings.HostingOption.BestRegion:
+            case ServerSettings.HostingOption.PhotonCloud:
+                // voice appid
+                string valVoiceAppId = EditorGUILayout.TextField("Voice AppId", settings.VoiceAppID);
+                if (valVoiceAppId != settings.VoiceAppID)
+                {
+                    settings.VoiceAppID = valVoiceAppId;
+                    this.showVoiceAppIdHint = !IsAppId(settings.VoiceAppID);
+                }
+                if (this.showVoiceAppIdHint)
+                {
+                    EditorGUILayout.HelpBox("The Photon Voice needs an AppId (GUID) set.\nYou can find it online in your Dashboard.", MessageType.Warning);
+                }
+                break;
+            case ServerSettings.HostingOption.SelfHosted:
+                if (settings.VoiceServerPort == 0)
+                {
+                    settings.VoiceServerPort = 5055;
+                }
+                settings.VoiceServerPort = EditorGUILayout.IntField("Voice Server Port", settings.VoiceServerPort);
+                break;
+            case ServerSettings.HostingOption.OfflineMode:
+            case ServerSettings.HostingOption.NotSet:
+                break;
         }
-        if (this.showVoiceAppIdHint)
-        {
-            EditorGUILayout.HelpBox("The Photon Voice needs an AppId (GUID) set.\nYou can find it online in your Dashboard.", MessageType.Warning);
-        }
+        
 #endif
 
         //SerializedProperty sp = serializedObject.FindProperty("RpcList");

@@ -66,6 +66,10 @@ public class PhotonViewInspector : Editor
         OwnershipOption own = (OwnershipOption)EditorGUILayout.EnumPopup(this.m_Target.ownershipTransfer, GUILayout.Width(100));
         if (own != this.m_Target.ownershipTransfer)
         {
+			// jf: fixed 5 and up prefab not accepting changes if you quit Unity straight after change.
+			// not touching the define nor the rest of the code to avoid bringing more problem than solving.
+			EditorUtility.SetDirty(this.m_Target);
+
             Undo.RecordObject(this.m_Target, "Change PhotonView Ownership Transfer");
             this.m_Target.ownershipTransfer = own;
         }

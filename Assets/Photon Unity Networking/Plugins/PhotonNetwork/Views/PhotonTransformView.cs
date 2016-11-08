@@ -1,4 +1,4 @@
-﻿// ----------------------------------------------------------------------------
+﻿	// ----------------------------------------------------------------------------
 // <copyright file="PhotonTransformView.cs" company="Exit Games GmbH">
 //   PhotonNetwork Framework for Unity - Copyright (C) 2016 Exit Games GmbH
 // </copyright>
@@ -44,6 +44,11 @@ public class PhotonTransformView : MonoBehaviour, IPunObservable
 
     bool m_ReceivedNetworkUpdate = false;
 
+	/// <summary>
+	/// Flag to skip initial data when Object is instantiated and rely on the first deserialized data instead.
+	/// </summary>
+	bool m_firstTake = false;
+
     void Awake()
     {
         this.m_PhotonView = GetComponent<PhotonView>();
@@ -52,6 +57,11 @@ public class PhotonTransformView : MonoBehaviour, IPunObservable
         this.m_RotationControl = new PhotonTransformViewRotationControl(this.m_RotationModel);
         this.m_ScaleControl = new PhotonTransformViewScaleControl(this.m_ScaleModel);
     }
+
+	void OnEnable()
+	{
+		m_firstTake = true;
+	}
 
     void Update()
     {
@@ -72,7 +82,7 @@ public class PhotonTransformView : MonoBehaviour, IPunObservable
             return;
         }
 
-        transform.localPosition = this.m_PositionControl.UpdatePosition(transform.localPosition);
+       	transform.localPosition = this.m_PositionControl.UpdatePosition(transform.localPosition);
     }
 
     void UpdateRotation()
@@ -122,6 +132,16 @@ public class PhotonTransformView : MonoBehaviour, IPunObservable
         if (stream.isReading == true)
         {
             this.m_ReceivedNetworkUpdate = true;
+
+			// force latest data to avoid initial drifts when player is instantiated.
+			if (m_firstTake)
+			{
+				m_firstTake = false;
+				this.transform.localPosition = this.m_PositionControl.GetNetworkPosition();
+				this.transform.localRotation = this.m_RotationControl.GetNetworkRotation();
+				this.transform.localScale = this.m_ScaleControl.GetNetworkScale();
+			}
+
         }
     }
 
@@ -140,9 +160,15 @@ public class PhotonTransformView : MonoBehaviour, IPunObservable
     {
         Vector3 targetPosition = this.m_PositionControl.GetNetworkPosition();
 
-        Debug.DrawLine(targetPosition, transform.position, Color.red, 2f);
+		// we are synchronizing the localPosition, so we need to add the parent position for a proper positioning.
+		if (transform.parent != null)
+		{
+			targetPosition = transform.parent.position + targetPosition ;
+		}
+
+		Debug.DrawLine(targetPosition, transform.position, Color.red, 2f);
         Debug.DrawLine(transform.position, transform.position + Vector3.up, Color.green, 2f);
-        Debug.DrawLine(targetPosition, targetPosition + Vector3.up, Color.red, 2f);
+		Debug.DrawLine(targetPosition , targetPosition + Vector3.up, Color.red, 2f);
     }
 
     //void DoDrawNetworkPositionGizmo()

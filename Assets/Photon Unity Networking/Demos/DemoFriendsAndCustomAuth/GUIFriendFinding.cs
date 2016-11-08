@@ -6,6 +6,7 @@ public class GUIFriendFinding : MonoBehaviour
     private string[] friendListOfSomeCommunity;
     public Rect GuiRect;
 
+	private string ExpectedUsers;
 
     void Start()
     {
@@ -75,8 +76,11 @@ public class GUIFriendFinding : MonoBehaviour
         }
         if (GUILayout.Button("Create Room"))
         {
-            PhotonNetwork.CreateRoom(null); // just a random room
+				PhotonNetwork.CreateRoom(null); // just a random room
         }
+
+		ExpectedUsers = GUILayout.TextField("Expected Users",ExpectedUsers);
+
         GUILayout.EndHorizontal();
 
 

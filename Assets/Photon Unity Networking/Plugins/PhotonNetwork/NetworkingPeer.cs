@@ -130,23 +130,31 @@ public enum DisconnectCause
 {
     /// <summary>Server actively disconnected this client.
     /// Possible cause: The server's user limit was hit and client was forced to disconnect (on connect).</summary>
-    DisconnectByServerUserLimit,
+    DisconnectByServerUserLimit = StatusCode.DisconnectByServerUserLimit,
+
     /// <summary>Connection could not be established.
     /// Possible cause: Local server not running.</summary>
-    ExceptionOnConnect,
+    ExceptionOnConnect = StatusCode.ExceptionOnConnect,
+
     /// <summary>Timeout disconnect by server (which decided an ACK was missing for too long).</summary>
-    DisconnectByServerTimeout,
+    DisconnectByServerTimeout = StatusCode.DisconnectByServer,
+
     /// <summary>Server actively disconnected this client.
     /// Possible cause: Server's send buffer full (too much data for client).</summary>
-    DisconnectByServerLogic,
+    DisconnectByServerLogic = StatusCode.DisconnectByServerLogic,
+
     /// <summary>Some exception caused the connection to close.</summary>
-    Exception,
-    /// <summary>The Photon Cloud rejected the sent AppId. Check your Dashboard and make sure the AppId you use is complete and correct.</summary>
-    InvalidAuthentication,
-    /// <summary>Authorization on the Photon Cloud failed because the concurrent users (CCU) limit of the app's subscription is reached.</summary>
-    MaxCcuReached,
-    /// <summary>Authorization on the Photon Cloud failed because the app's subscription does not allow to use a particular region's server.</summary>
-    InvalidRegion,
+    Exception = StatusCode.Exception,
+
+    /// <summary>(32767) The Photon Cloud rejected the sent AppId. Check your Dashboard and make sure the AppId you use is complete and correct.</summary>
+    InvalidAuthentication = ErrorCode.InvalidAuthentication,
+
+    /// <summary>(32757) Authorization on the Photon Cloud failed because the concurrent users (CCU) limit of the app's subscription is reached.</summary>
+    MaxCcuReached = ErrorCode.MaxCcuReached,
+
+    /// <summary>(32756) Authorization on the Photon Cloud failed because the app's subscription does not allow to use a particular region's server.</summary>
+    InvalidRegion = ErrorCode.InvalidRegion,
+
     /// <summary>The security settings for client or server don't allow a connection (see remarks).</summary>
     /// <remarks>
     /// A common cause for this is that browser clients read a "crossdomain" file from the server.
@@ -155,14 +163,17 @@ public enum DisconnectCause
     /// If it fails, read:
     /// http://doc.exitgames.com/photon-server/PolicyApp
     /// </remarks>
-    SecurityExceptionOnConnect,
+    SecurityExceptionOnConnect = StatusCode.SecurityExceptionOnConnect,
+
     /// <summary>Timeout disconnect by client (which decided an ACK was missing for too long).</summary>
-    DisconnectByClientTimeout,
+    DisconnectByClientTimeout = StatusCode.TimeoutDisconnect,
+
     /// <summary>Exception in the receive-loop.
     /// Possible cause: Socket failure.</summary>
-    InternalReceiveException,
-    /// <summary>The Authentication ticket expired. Handle this by connecting again (which includes an authenticate to get a fresh ticket).</summary>
-    AuthenticationTicketExpired,
+    InternalReceiveException = StatusCode.ExceptionOnReceive,
+
+    /// <summary>(32753) The Authentication ticket expired. Handle this by connecting again (which includes an authenticate to get a fresh ticket).</summary>
+    AuthenticationTicketExpired = 32753,
 }
 
 /// <summary>Available server (types) for internally used field: server.</summary>
@@ -652,7 +663,6 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
                     Debug.LogWarning("Using PhotonServerSettings.Protocol when leaving the NameServer (AuthMode is AuthOnceWss): " + PhotonNetwork.PhotonServerSettings.Protocol);
                 }
                 protocolOverride = PhotonNetwork.PhotonServerSettings.Protocol;
-                this.SocketImplementation = null;
             }
             else
             {
@@ -661,21 +671,30 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
                     Debug.LogWarning("Using WebSocket to connect NameServer (AuthMode is AuthOnceWss).");
                 }
                 protocolOverride = ConnectionProtocol.WebSocketSecure;
-                #if UNITY_XBOXONE
-                this.SocketImplementation = typeof(SocketWebTcp);
-                #endif
             }
         }
+
+        // to support WebGL export in Unity, we find and assign the SocketWebTcp class (if it's in the project).
+        // alternatively class SocketWebTcp might be in the Photon3Unity3D.dll
+        Type socketTcp = Type.GetType("ExitGames.Client.Photon.SocketWebTcp, Assembly-CSharp", false);
+        if (socketTcp == null)
+        {
+            socketTcp = Type.GetType("ExitGames.Client.Photon.SocketWebTcp, Assembly-CSharp-firstpass", false);
+        }
+        if (socketTcp != null)
+        {
+            this.SocketImplementationConfig[ConnectionProtocol.WebSocket] = socketTcp;
+            this.SocketImplementationConfig[ConnectionProtocol.WebSocketSecure] = socketTcp;
+        }
+
 
         #if UNITY_WEBGL
         if (this.TransportProtocol != ConnectionProtocol.WebSocket && this.TransportProtocol != ConnectionProtocol.WebSocketSecure)
         {
 			Debug.Log("WebGL only supports WebSocket protocol. Overriding PhotonServerSettings.");
 	        protocolOverride = ConnectionProtocol.WebSocketSecure;
-            this.SocketImplementation = typeof(SocketWebTcp);
 		}
         #endif
-
 
 
         #if !UNITY_EDITOR && (UNITY_WINRT)
@@ -695,21 +714,19 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
             protocolOverride = ConnectionProtocol.Udp;
 
             #if !UNITY_EDITOR && (UNITY_PS3 || UNITY_ANDROID)
-            Debug.Log("Using class SocketUdpNativeDynamic");
-            this.SocketImplementation = typeof(SocketUdpNativeDynamic);
+            this.SocketImplementationConfig[ConnectionProtocol.Udp] = typeof(SocketUdpNativeDynamic);
             PhotonHandler.PingImplementation = typeof(PingNativeDynamic);
             #elif !UNITY_EDITOR && UNITY_IPHONE
-            Debug.Log("Using class SocketUdpNativeStatic");
-            this.SocketImplementation = typeof(SocketUdpNativeStatic);
+            this.SocketImplementationConfig[ConnectionProtocol.Udp] = typeof(SocketUdpNativeStatic);
             PhotonHandler.PingImplementation = typeof(PingNativeStatic);
             #elif !UNITY_EDITOR && UNITY_WINRT
             // this automatically uses a separate assembly-file with Win8-style Socket usage (not possible in Editor)
             #else
-            this.SocketImplementation = typeof(SocketUdp);
+            this.SocketImplementationConfig[ConnectionProtocol.Udp] = typeof(SocketUdp);
             PhotonHandler.PingImplementation = typeof(PingMonoEditor);
             #endif
 
-            if (this.SocketImplementation == null)
+            if (this.SocketImplementationConfig[ConnectionProtocol.Udp] == null)
             {
                 Debug.Log("No socket implementation set for 'NoSocket' assembly. Please check your settings.");
             }
@@ -734,11 +751,6 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
         }
 
         this.TransportProtocol = protocolOverride;
-
-        if (this.EncryptionMode == EncryptionMode.DatagramEncryption && this.TransportProtocol != ConnectionProtocol.Udp)
-        {
-            Debug.LogError("EncryptionMode is DatagramEncryption but TransportProtocol is not UDP! Fix your PhotonServerSettings.");
-        }
     }
 
     /// <summary>
@@ -2094,6 +2106,7 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
                     this.AuthValues.Token = null;  // invalidate any custom auth secrets
                 }
 
+				/* JF: we need this when reconnecting and joining.
                 if (this.ServerAddress.Equals(this.GameServerAddress))
                 {
                     this.GameServerAddress = null;
@@ -2102,6 +2115,8 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
                 {
                     this.ServerAddress = null;
                 }
+                */
+
                 this.Disconnect();
                 break;
 
@@ -2196,7 +2211,7 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
                 int[] requestValues = (int[]) photonEvent.Parameters[ParameterCode.CustomEventContent];
                 int requestedViewId = requestValues[0];
                 int currentOwner = requestValues[1];
-                Debug.Log("Ev OwnershipRequest: " + photonEvent.Parameters.ToStringFull() + " ViewID: " + requestedViewId + " from: " + currentOwner + " Time: " + Environment.TickCount%1000);
+
 
                 PhotonView requestedView = PhotonView.Find(requestedViewId);
                 if (requestedView == null)
@@ -2205,7 +2220,8 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
                     break;
                 }
 
-                Debug.Log("Ev OwnershipRequest PhotonView.ownershipTransfer: " + requestedView.ownershipTransfer + " .ownerId: " + requestedView.ownerId + " isOwnerActive: " + requestedView.isOwnerActive + ". This client's player: " + PhotonNetwork.player.ToStringFull());
+                if (PhotonNetwork.logLevel == PhotonLogLevel.Informational)
+                    Debug.Log("Ev OwnershipRequest " + requestedView.ownershipTransfer + ". ActorNr: " + actorNr + " takes from: " + currentOwner + ". Current owner: " + requestedView.ownerId + " isOwnerActive: " + requestedView.isOwnerActive + ". MasterClient: " + this.mMasterClientId + ". This client's player: " + PhotonNetwork.player.ToStringFull());
 
                 switch (requestedView.ownershipTransfer)
                 {
@@ -2213,10 +2229,15 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
                         Debug.LogWarning("Ownership mode == fixed. Ignoring request.");
                         break;
                     case OwnershipOption.Takeover:
-                        if (currentOwner == requestedView.ownerId)
+                        if (currentOwner == requestedView.ownerId || (currentOwner == 0 && requestedView.ownerId == this.mMasterClientId))
                         {
                             // a takeover is successful automatically, if taken from current owner
+							requestedView.OwnerShipWasTransfered = true;
                             requestedView.ownerId = actorNr;
+                            if (PhotonNetwork.logLevel == PhotonLogLevel.Informational)
+                            {
+                                Debug.LogWarning(requestedView + " ownership transfered to: "+ actorNr);
+                            }
                         }
                         break;
                     case OwnershipOption.Request:
@@ -2245,7 +2266,9 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
                     PhotonView pv = PhotonView.Find(requestedViewId);
                     if (pv != null)
                     {
+						pv.OwnerShipWasTransfered = true;
                         pv.ownerId = newOwnerId;
+
                     }
 
                     break;
@@ -3252,31 +3275,6 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
     }
 
     /// <summary>
-    /// This returns -1 if the GO could not be found in list of instantiatedObjects.
-    /// </summary>
-    public int GetInstantiatedObjectsId(GameObject go)
-    {
-        int id = -1;
-        if (go == null)
-        {
-            Debug.LogError("GetInstantiatedObjectsId() for GO == null.");
-            return id;
-        }
-
-        PhotonView[] pvs = go.GetPhotonViewsInChildren();
-        if (pvs != null && pvs.Length > 0 && pvs[0] != null)
-        {
-            return pvs[0].instantiationId;
-        }
-
-        if (PhotonNetwork.logLevel >= PhotonLogLevel.Informational)
-            UnityEngine.Debug.Log("GetInstantiatedObjectsId failed for GO: " + go);
-
-
-        return id;
-    }
-
-    /// <summary>
     /// Removes an instantiation event from the server's cache. Needs id and actorNr of player who instantiated.
     /// </summary>
     private void ServerCleanInstantiateAndDestroy(int instantiateId, int creatorId, bool isRuntimeInstantiated)
@@ -3782,11 +3780,12 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
         // Debug.Log("OnLevelWasLoaded photonViewList.Count: " + photonViewList.Count); // Exit Games internal log
 
         List<int> removeKeys = new List<int>();
-        foreach (PhotonView view in this.photonViewList.Values)
+        foreach (KeyValuePair<int, PhotonView> kvp in this.photonViewList)
         {
+            PhotonView view = kvp.Value;
             if (view == null)
             {
-                removeKeys.Add(view.viewID);
+                removeKeys.Add(kvp.Key);
             }
         }
 
@@ -4003,21 +4002,6 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
         return null;
     }
 
-
-	string LogObjectArray(object[] data)
-	{
-	    if (data == null) return "null";
-        string[] sb = new string[data.Length];
-        for (int i = 0; i < data.Length; i++)
-        {
-            object o = data[i];
-            sb[i] = (o != null) ? o.ToString() : "null";
-        }
-
-        return string.Join(", ",sb);
-    }
-
-
     /// <summary>
     /// Reads updates created by OnSerializeWrite
     /// </summary>
@@ -4050,6 +4034,8 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
         }
 
 
+
+
         if (view.synchronization == ViewSynchronization.ReliableDeltaCompressed)
         {
             object[] uncompressed = this.DeltaCompressionRead(view.lastOnSerializeDataReceived, data);
@@ -4068,49 +4054,22 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
             view.lastOnSerializeDataReceived = uncompressed;
             data = uncompressed;
         }
-
-        //// TODO: check if we really want to set the owner of a GO, based on who sends something about it.
-        //// this has nothing to do with reading the actual synchronization update.
-        //if (sender.ID != view.ownerId)
-        //{
-        //    if (!view.isSceneView || !sender.isMasterClient)
-        //    {
-        //        // obviously the owner changed and we didn't yet notice.
-        //        Debug.Log("Adjusting owner to sender of updates. From: " + view.ownerId + " to: " + sender.ID);
-        //        view.ownerId = sender.ID;
-        //    }
-        //}
-
+		
+        // This is when joining late to assign ownership to the sender
+        // this has nothing to do with reading the actual synchronization update.
+        // We don't do anything is OwnerShip Was Touched, which means we got the infos already. We only possibly act if ownership was never transfered.
+		// We do override OwnerShipWasTransfered if owner is the masterClient.
+		if (sender.ID != view.ownerId && (!view.OwnerShipWasTransfered || view.ownerId == 0) )
+        {
+            // obviously the owner changed and we didn't yet notice.
+            Debug.Log("Adjusting owner to sender of updates. From: " + view.ownerId + " to: " + sender.ID);
+            view.ownerId = sender.ID;
+        }
+		
         this.readStream.SetReadStream(data, 3);
         PhotonMessageInfo info = new PhotonMessageInfo(sender, networkTime, view);
 
         view.DeserializeView(this.readStream, info);
-    }
-
-
-    private bool AlmostEquals(object[] lastData, object[] currentContent)
-    {
-        if (lastData == null && currentContent == null)
-        {
-            return true;
-        }
-
-        if (lastData == null || currentContent == null || (lastData.Length != currentContent.Length))
-        {
-            return false;
-        }
-
-        for (int index = 0; index < currentContent.Length; index++)
-        {
-            object newObj = currentContent[index];
-            object oldObj = lastData[index];
-            if (!this.ObjectIsSameWithInprecision(newObj, oldObj))
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 
 
@@ -4119,6 +4078,11 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
     // to conserve memory, the previousContent is re-used as buffer for the result! duplicate the values before using this, if needed
     // returns null, if nothing must be sent (current content might be null, which also returns null)
     // SyncFirstValue should be the index of the first actual data-value (3 in PUN's case, as 0=viewId, 1=(bool)compressed, 2=(int[])values that are now null)
+    public const int SyncViewId     = 0;
+    public const int SyncCompressed = 1;
+    public const int SyncNullValues = 2;
+    public const int SyncFirstValue = 3;
+
     private object[] DeltaCompressionWrite(object[] previousContent, object[] currentContent)
     {
         if (currentContent == null || previousContent == null || previousContent.Length != currentContent.Length)
@@ -4141,7 +4105,7 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
         {
             object newObj = currentContent[index];
             object oldObj = previousContent[index];
-            if (this.ObjectIsSameWithInprecision(newObj, oldObj))
+            if (this.AlmostEquals(newObj, oldObj))
             {
                 // compress (by using null, instead of value, which is same as before)
                 compressedValues++;
@@ -4184,14 +4148,6 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
         return compressedContent;    // some data was compressed but we need to send something
     }
 
-    public const int SyncViewId     = 0;
-    public const int SyncCompressed = 1;
-    public const int SyncNullValues = 2;
-    public const int SyncFirstValue = 3;
-
-
-    // startIndex should be the index of the first actual data-value (3 in PUN's case, as 0=viewId, 1=(bool)compressed, 2=(int[])values that are now null)
-    // returns the incomingData with modified content. any object being null (means: value unchanged) gets replaced with a previously sent value. incomingData is being modified
     private object[] DeltaCompressionRead(object[] lastOnSerializeDataReceived, object[] incomingData)
     {
         if ((bool)incomingData[SyncCompressed] == false)
@@ -4227,11 +4183,40 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
     }
 
 
+    // startIndex should be the index of the first actual data-value (3 in PUN's case, as 0=viewId, 1=(bool)compressed, 2=(int[])values that are now null)
+    // returns the incomingData with modified content. any object being null (means: value unchanged) gets replaced with a previously sent value. incomingData is being modified
+
+
+    private bool AlmostEquals(object[] lastData, object[] currentContent)
+    {
+        if (lastData == null && currentContent == null)
+        {
+            return true;
+        }
+
+        if (lastData == null || currentContent == null || (lastData.Length != currentContent.Length))
+        {
+            return false;
+        }
+
+        for (int index = 0; index < currentContent.Length; index++)
+        {
+            object newObj = currentContent[index];
+            object oldObj = lastData[index];
+            if (!this.AlmostEquals(newObj, oldObj))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     /// <summary>
     /// Returns true if both objects are almost identical.
     /// Used to check whether two objects are similar enough to skip an update.
     /// </summary>
-    bool ObjectIsSameWithInprecision(object one, object two)
+    bool AlmostEquals(object one, object two)
     {
         if (one == null || two == null)
         {
