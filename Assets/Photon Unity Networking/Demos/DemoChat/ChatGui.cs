@@ -28,6 +28,9 @@ public class ChatGui : MonoBehaviour, IChatClientListener
     public string ChatAppId; // set in inspector
 
     public string[] ChannelsToJoinOnConnect; // set in inspector. Demo channels to join automatically.
+
+	public string[] FriendsList;
+
     public int HistoryLengthToFetch; // set in inspector. Up to a certain degree, previously sent messages can be fetched for context
 
     public string UserName { get; set; }
@@ -36,45 +39,100 @@ public class ChatGui : MonoBehaviour, IChatClientListener
 
     public ChatClient chatClient;
 
+	public GameObject missingAppIdErrorPanel;
+
+	public GameObject ConnectingLabel;
 
     public RectTransform ChatPanel;     // set in inspector (to enable/disable panel)
+	public GameObject UserIdFormPanel;
     public InputField InputFieldChat;   // set in inspector
     public Text CurrentChannelText;     // set in inspector
     public Toggle ChannelToggleToInstantiate; // set in inspector
     private readonly Dictionary<string, Toggle> channelToggles = new Dictionary<string, Toggle>();
 
     public bool ShowState = true;
+	public GameObject Title;
     public Text StateText; // set in inspector
+	public Text UserIdText; // set in inspector
 
     private string userIdInput = "";
     private static string WelcomeText = "Welcome to chat. Type \\help to list commands.";
-    private static string HelpText = "\n\\subscribe <list of channelnames> or \\s <list of channelnames> subscribes channels.\n\\unsubscribe <list of channelnames> or \\u <list of channelnames> leaves channels.\n\\join <channelname> or \\j <channelname> switches the active channel.\n\\msg <username> <message> send private message to user.\n\\clear clears the current chat tab. private chats get closed.\n\\help gets this help message.";
+	private static string HelpText = "\n    -- HELP --\n" +
+			"To subscribe to channel(s):\n" +
+			"\t<color=#E07B00>\\subscribe</color> <color=green><list of channelnames></color>\n" +
+			"\tor\n" +
+			"\t<color=#E07B00>\\s</color> <color=green><list of channelnames></color>\n" +
+			"\n" +
+			"To leave channel(s):\n" +
+			"\t<color=#E07B00>\\unsubscribe</color> <color=green><list of channelnames></color>\n" +
+			"\tor\n" +
+			"\t<color=#E07B00>\\u</color> <color=green><list of channelnames></color>\n" +
+			"\n" +
+			"To switch the active channel\n" +
+			"\t<color=#E07B00>\\join</color> <color=green><channelname></color>\n" +
+			"\tor\n" +
+			"\t<color=#E07B00>\\j</color> <color=green><channelname></color>\n" +
+			"\n" +
+			"To send a private message:\n" +
+			"\t\\<color=#E07B00>msg</color> <color=green><username></color> <color=green><message></color>\n" +
+			"\n" +
+			"To change status:\n" +
+			"\t\\<color=#E07B00>state</color> <color=green>stateIndex</color>\n" +
+			"<color=green>0</color> = Offline " +
+			"<color=green>1</color> = Invisible " +
+			"<color=green>2</color> = Online " +
+			"<color=green>3</color> = Away \n" +
+			"<color=green>4</color> = Do not disturb " +
+			"<color=green>5</color> = Looking For Group " +
+			"<color=green>6</color> = Playing\n" +
+			"\n" +
+			"To clear the current chat tab (private chats get closed):\n" +
+			"\t<color=#E07B00>\\clear</color>";
 
 
     public void Start()
     {
-        DontDestroyOnLoad(gameObject);
-        this.ChatPanel.gameObject.SetActive(true);
+		DontDestroyOnLoad(gameObject);
+		Application.runInBackground = true; // this must run in background or it will drop connection if not focussed.
 
-        Application.runInBackground = true; // this must run in background or it will drop connection if not focussed.
+		UserIdText.text = "";
+		StateText.text  = "";
+		StateText.gameObject.SetActive(true);
+		UserIdText.gameObject.SetActive(true);
+		Title.SetActive(true);
+		ChatPanel.gameObject.SetActive(false);
+		ConnectingLabel.SetActive(false);
 
-        if (string.IsNullOrEmpty(ChatAppId))
-        {
-            Debug.LogError("You need to set the chat app ID in the inspector in order to continue.");
+		if (string.IsNullOrEmpty(UserName))
+		{
+			UserName = "user" + Environment.TickCount%99; //made-up username
+		}
 
-            return;
-        }
+		bool _AppIdPresent = string.IsNullOrEmpty(ChatAppId);
+		this.missingAppIdErrorPanel.SetActive(_AppIdPresent);
+		
+		this.UserIdFormPanel.gameObject.SetActive(!_AppIdPresent);
 
-        if (string.IsNullOrEmpty(UserName))
-        {
-            UserName = "user" + Environment.TickCount%99; //made-up username
-        }
+		if (string.IsNullOrEmpty(ChatAppId))
+		{
+			Debug.LogError("You need to set the chat app ID in the inspector in order to continue.");
+			return;
+		}
+	}
+
+	public void Connect()
+	{
+       
+
+		this.UserIdFormPanel.gameObject.SetActive(false);
 
         this.chatClient = new ChatClient(this);
         this.chatClient.Connect(ChatAppId, "1.0", new ExitGames.Client.Photon.Chat.AuthenticationValues(UserName));
 
         this.ChannelToggleToInstantiate.gameObject.SetActive(false);
         Debug.Log("Connecting as: " + UserName);
+
+		ConnectingLabel.SetActive(true);
     }
 
     /// <summary>To avoid that the Editor becomes unresponsive, disconnect all Photon connections in OnApplicationQuit.</summary>
@@ -232,7 +290,7 @@ public class ChatGui : MonoBehaviour, IChatClientListener
         }
     }
 
-    private void PostHelpToCurrentChannel()
+    public void PostHelpToCurrentChannel()
     {
         this.CurrentChannelText.text += HelpText;
     }
@@ -260,12 +318,23 @@ public class ChatGui : MonoBehaviour, IChatClientListener
             this.chatClient.Subscribe(this.ChannelsToJoinOnConnect, this.HistoryLengthToFetch);
         }
 
-        this.chatClient.AddFriends(new string[] {"tobi", "ilya"}); // Add some users to the server-list to get their status updates
+		ConnectingLabel.SetActive(false);
+
+		UserIdText.text = "Connected as "+ this.UserName;
+
+		this.ChatPanel.gameObject.SetActive(true);
+
+		if (FriendsList!=null  && FriendsList.Length>0)
+		{
+			this.chatClient.AddFriends(FriendsList); // Add some users to the server-list to get their status updates
+		}
+
         this.chatClient.SetOnlineStatus(ChatUserStatus.Online); // You can set your online state (without a mesage).
     }
 
     public void OnDisconnected()
     {
+		ConnectingLabel.SetActive(false);
     }
 
     public void OnChatStateChange(ChatState state)
@@ -446,4 +515,13 @@ public class ChatGui : MonoBehaviour, IChatClientListener
             pair.Value.isOn = pair.Key == channelName ? true : false;
         }
     }
+
+	public void OpenDashboard()
+	{
+        Application.OpenURL("https://www.photonengine.com/en/Dashboard/Chat");
+	}
+
+
+
+
 }
