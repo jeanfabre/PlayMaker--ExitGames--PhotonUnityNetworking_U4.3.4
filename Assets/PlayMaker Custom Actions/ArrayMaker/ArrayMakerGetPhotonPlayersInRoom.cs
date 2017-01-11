@@ -76,7 +76,7 @@ namespace HutongGames.PlayMaker.Actions
 			
 			foreach (PhotonPlayer player in players)
             {
-				nameList.arrayList.Add(player.name);
+				nameList.arrayList.Add(player.NickName);
 				idList.arrayList.Add(player.ID);
 			}
 	
