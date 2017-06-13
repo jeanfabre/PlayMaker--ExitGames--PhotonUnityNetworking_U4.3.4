@@ -7,12 +7,12 @@ namespace PlayMaker.PUN.Chat
 {
 	public enum ChatUserStatus
 	{
-		Offline,
+		Offline ,
 		Invisible,
 		Online,
 		Away,
-		DND,
-		LFG,
+		DoNotDisturb,
+		LookingForGame,
 		Playing		
 	}
 }

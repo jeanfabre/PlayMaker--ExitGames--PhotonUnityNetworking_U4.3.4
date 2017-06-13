@@ -7,7 +7,7 @@ namespace HutongGames.PlayMaker.Actions
 {
 	[ActionCategory("Photon Chat")]
 	[Tooltip("Get the PHOTON / CHAT / ON CHAT STATE CHANGE event data")]
-	public class PhotonChatGetChatStateChangeEventData : FsmStateAction
+	public class PhotonChatGetOnChatStateChangeEventData : FsmStateAction
 	{
 
 		/// <summary>
@@ -15,21 +15,26 @@ namespace HutongGames.PlayMaker.Actions
 		/// </summary>
 		public static ChatState LastChatState;
 
-
 		[Tooltip("The chat state")]
-		[RequiredField]
+		[UIHint(UIHint.Variable)]
 		[ObjectType(typeof(ChatState))]
 		public FsmEnum chatState;
-		
+
+		[Tooltip("The chat state  as string")]
+		[UIHint(UIHint.Variable)]
+		public FsmString chatStateAsString;
+
 
 		public override void Reset()
 		{
-			chatState.RawValue = 0;
+			chatState = null ;//.RawValue = 0;
+			chatStateAsString = null;
 		}
 		
 		public override void OnEnter()
 		{
-			chatState.Value = LastChatState;
+			if (!chatState.IsNone) chatState.Value = LastChatState;
+			if (!chatStateAsString.IsNone) chatStateAsString.Value = LastChatState.ToString();
 
 			Finish();
 		}
