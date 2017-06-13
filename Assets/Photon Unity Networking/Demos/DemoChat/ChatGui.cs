@@ -95,8 +95,8 @@ public class ChatGui : MonoBehaviour, IChatClientListener
 	public void Start()
 	{
 		DontDestroyOnLoad(gameObject);
-		Application.runInBackground = true; // this must run in background or it will drop connection if not focussed.
-		
+
+
 		UserIdText.text = "";
 		StateText.text  = "";
 		StateText.gameObject.SetActive(true);

@@ -1,8 +1,9 @@
-﻿// (c) Copyright HutongGames, LLC 2010-2016. All rights reserved.
+// (c) Copyright HutongGames, LLC 2010-2016. All rights reserved.
 
 using UnityEngine;
 
 using ExitGames.Client.Photon.Chat;
+using ExiGames.Client.Photon.Chat.Utils;
 
 namespace HutongGames.PlayMaker.Actions
 {
@@ -10,7 +11,7 @@ namespace HutongGames.PlayMaker.Actions
 	[Tooltip("Connect to Photon Chat")]
 	public class PhotonChatConnect : FsmStateAction
 	{
-		[Tooltip("The Application Id")]
+		[Tooltip("The Application Id. Leave to none to use the one from the Settings")]
 		public FsmString appId;
 
 		[Tooltip("The gameVersion")]
@@ -25,15 +26,15 @@ namespace HutongGames.PlayMaker.Actions
 		[UIHint(UIHint.Variable)]
 		public FsmBool result;
 
-		[Tooltip("Tevent sent if connection call was initiated")]
+		[Tooltip("Event sent if connection call was initiated")]
 		public FsmEvent successEvent;
 
-		[Tooltip("Tevent sent if connection call failed")]
+		[Tooltip("Event sent if connection call failed")]
 		public FsmEvent failureEvent;
 		
 		public override void Reset()
 		{
-			appId = null;
+			appId = new FsmString(){UseVariable = true};
 			gameVersion  = "1.0";
 			userId = new FsmString(){UseVariable=true};
 			result = null;
@@ -46,10 +47,18 @@ namespace HutongGames.PlayMaker.Actions
 
 			if (!userId.IsNone)
 			{
-				PlayMakerPhotonChatClient.AuthValues = new ExitGames.Client.Photon.Chat.AuthenticationValues(userId.Value);
+				ChatClientBroker.AuthValues = new ExitGames.Client.Photon.Chat.AuthenticationValues(userId.Value);
 			}
 
-			bool _result = PlayMakerPhotonChatClient.ChatClient.Connect(appId.Value, gameVersion.Value, PlayMakerPhotonChatClient.AuthValues);
+			string _appId = PhotonNetwork.PhotonServerSettings.ChatAppID;
+
+			if (!appId.IsNone)
+			{
+				_appId = appId.Value;
+			}
+
+
+			bool _result = ChatClientBroker.ChatClient.Connect(_appId, gameVersion.Value, ChatClientBroker.AuthValues);
 
 			if (!result.IsNone)
 			{

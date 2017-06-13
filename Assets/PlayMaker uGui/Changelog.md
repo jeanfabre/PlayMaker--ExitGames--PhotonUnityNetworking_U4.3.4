@@ -1,5 +1,34 @@
 #PlayMaker uGui Change log
 
+###1.3.2
+**Release** 09/01/2017  
+
+**fix** 
+- Reuse EventData Static, instead of creating new to avoid loosing data during actions stack processing  
+
+**udpate**  
+- PlayMaker Utils to latest
+
+###1.3.1
+**Release** 09/01/2017  
+
+**new**  
+- new action `uGuiGraphicCrossFadeColor`  
+- new action `uGuiGraphicCrossFadeAlpha`  
+
+###1.3
+**Release** 25/10/2016  
+
+**udpate**  
+- updated GetLastPointerData to inform about Inputbutton  
+
+###1.2.1
+**Release** 15/09/2016  
+
+**new**  
+- new action `uGuiInputFieldGetTextAsFloat`  
+- new action `uGuiInputFieldGetTextAsInt`  
+
 ###1.2.0
 **Release** 27/06/2016  
 

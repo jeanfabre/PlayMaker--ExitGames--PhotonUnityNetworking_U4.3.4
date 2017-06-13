@@ -1,6 +1,7 @@
-﻿// (c) Copyright HutongGames, LLC 2010-2016. All rights reserved.
+// (c) Copyright HutongGames, LLC 2010-2016. All rights reserved.
 
 using UnityEngine;
+using ExiGames.Client.Photon.Chat.Utils;
 
 namespace HutongGames.PlayMaker.Actions
 {
@@ -32,7 +33,7 @@ namespace HutongGames.PlayMaker.Actions
 		
 		public override void OnEnter()
 		{
-			bool _ok = PlayMakerPhotonChatClient.ChatClient.Subscribe(channels.stringValues);
+			bool _ok = ChatClientBroker.ChatClient.Subscribe(channels.stringValues);
 
 			if (!result.IsNone) result.Value = _ok;
 

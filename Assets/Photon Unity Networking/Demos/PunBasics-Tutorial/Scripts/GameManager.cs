@@ -14,6 +14,8 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement; 
 
+using ExitGames.Client.Photon;
+
 namespace ExitGames.Demos.DemoAnimator
 {
 	/// <summary>

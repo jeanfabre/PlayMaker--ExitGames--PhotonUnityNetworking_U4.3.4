@@ -1,6 +1,7 @@
-﻿// (c) Copyright HutongGames, LLC 2010-2016. All rights reserved.
+// (c) Copyright HutongGames, LLC 2010-2016. All rights reserved.
 
 using UnityEngine;
+using ExiGames.Client.Photon.Chat.Utils;
 
 namespace HutongGames.PlayMaker.Actions
 {
@@ -24,7 +25,7 @@ namespace HutongGames.PlayMaker.Actions
 				return;
 			}
 
-			PlayMakerPhotonChatClient.AuthValues = new ExitGames.Client.Photon.Chat.AuthenticationValues(userId.Value);
+			ChatClientBroker.AuthValues = new ExitGames.Client.Photon.Chat.AuthenticationValues(userId.Value);
 
 			Finish();
 		}

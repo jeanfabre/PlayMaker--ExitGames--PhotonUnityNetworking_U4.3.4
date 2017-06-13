@@ -1,7 +1,8 @@
-﻿// (c) Copyright HutongGames, LLC 2010-2016. All rights reserved.
+// (c) Copyright HutongGames, LLC 2010-2016. All rights reserved.
 
 using UnityEngine;
 using PlayMaker.PUN.Chat;
+using ExiGames.Client.Photon.Chat.Utils;
 
 namespace HutongGames.PlayMaker.Actions
 {
@@ -20,7 +21,7 @@ namespace HutongGames.PlayMaker.Actions
 		
 		public override void OnEnter()
 		{
-			PlayMakerPhotonChatClient.ChatClient.SetOnlineStatus((int)onlineStatus.RawValue);
+			ChatClientBroker.ChatClient.SetOnlineStatus((int)onlineStatus.RawValue);
 
 			Finish();
 		}
