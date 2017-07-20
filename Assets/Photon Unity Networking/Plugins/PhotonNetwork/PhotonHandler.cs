@@ -201,7 +201,7 @@ internal class PhotonHandler : MonoBehaviour
         }
 
         sendThreadShouldRun = true;
-        SupportClassPun.CallInBackground(FallbackSendAckThread);   // thread will call this every 100ms until method returns false
+        SupportClassPun.StartBackgroundCalls(FallbackSendAckThread);   // thread will call this every 100ms until method returns false
 	    #endif
     }
 

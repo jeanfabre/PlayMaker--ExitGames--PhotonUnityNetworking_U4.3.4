@@ -1,6 +1,13 @@
+v1.85 (6. July 2017)
+Fixed: Interest Groups IDs are now of type byte for Instantiate (and all related code) as well. This fixes a cast exception.
+Fixed: Internal use of NetworkingPeer.IsInitialConnect. It's now reset when the connection fails while connecting. This (currently) affects the "connected" and "connecting" values, which is likely to change. This fix is minimal by design.
+Updated: PUN to no longer make use of obsolete enum values of the Photon library (dll).
+Updated: Chat API and ChatGui. Now uses a thread to call SendOutgoingCommands, which keeps connections up (except on WebGL, where threading is not available).
+Updated: To Photon library v4.1.1.14 with various fixes. See plugins\release_history.txt.
+
+
 v1.84.1 (2. June 2017)
 Fixed: A minor bug in the Photon3Unity3d.dll, which is now v4.1.1.13. The StreamBuffer.Seek() could fail to seek position 0 when length is 0.
-
 
 v1.84 (30. May 2017)
 Fixed: PlayerRoomIndexing can now be added at runtime even on non MasterClient instance. master player is now indicated in the inspector.

@@ -2432,7 +2432,7 @@ public static class PhotonNetwork
     /// <param name="rotation">Rotation Quaternion to apply on instantiation.</param>
     /// <param name="group">The group for this PhotonView.</param>
     /// <returns>The new instance of a GameObject with initialized PhotonView.</returns>
-    public static GameObject Instantiate(string prefabName, Vector3 position, Quaternion rotation, int group)
+    public static GameObject Instantiate(string prefabName, Vector3 position, Quaternion rotation, byte group)
     {
         return Instantiate(prefabName, position, rotation, group, null);
     }
@@ -2447,7 +2447,7 @@ public static class PhotonNetwork
     /// <param name="group">The group for this PhotonView.</param>
     /// <param name="data">Optional instantiation data. This will be saved to it's PhotonView.instantiationData.</param>
     /// <returns>The new instance of a GameObject with initialized PhotonView.</returns>
-    public static GameObject Instantiate(string prefabName, Vector3 position, Quaternion rotation, int group, object[] data)
+    public static GameObject Instantiate(string prefabName, Vector3 position, Quaternion rotation, byte group, object[] data)
     {
         if (!connected || (InstantiateInRoomOnly && !inRoom))
         {
@@ -2507,7 +2507,7 @@ public static class PhotonNetwork
     /// <param name="group">The group for this PhotonView.</param>
     /// <param name="data">Optional instantiation data. This will be saved to it's PhotonView.instantiationData.</param>
     /// <returns>The new instance of a GameObject with initialized PhotonView.</returns>
-    public static GameObject InstantiateSceneObject(string prefabName, Vector3 position, Quaternion rotation, int group, object[] data)
+    public static GameObject InstantiateSceneObject(string prefabName, Vector3 position, Quaternion rotation, byte group, object[] data)
     {
         if (!connected || (InstantiateInRoomOnly && !inRoom))
         {

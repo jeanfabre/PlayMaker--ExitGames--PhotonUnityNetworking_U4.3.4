@@ -136,6 +136,7 @@ public class PhotonPingManager
     public static bool IgnoreInitialAttempt = true;
     public static int MaxMilliseconsPerPing = 800; // enter a value you're sure some server can beat (have a lower rtt)
 
+	private const string wssProtocolString = "wss://";
 
     public Region BestRegion
     {
@@ -214,7 +215,15 @@ public class PhotonPingManager
             regionAddress = regionAddress.Substring(0, indexOfColon);
         }
 
+		// we also need to remove the protocol or Dns.GetHostAddresses(hostName) will throw an exception
+		// This is for xBox One for example.
+		int indexOfProtocol = regionAddress.IndexOf(PhotonPingManager.wssProtocolString);
+		if (indexOfProtocol > -1)
+		{
+			regionAddress = regionAddress.Substring(indexOfProtocol+PhotonPingManager.wssProtocolString.Length);
+		}
         regionAddress = ResolveHost(regionAddress);
+
 
         for (int i = 0; i < Attempts; i++)
         {

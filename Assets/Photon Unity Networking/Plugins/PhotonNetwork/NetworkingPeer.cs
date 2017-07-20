@@ -2101,16 +2101,20 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
                 {
                     if (this.AuthValues != null)
                     {
-                        this.AuthValues.Token = null;  // invalidate any custom auth secrets
+                        this.AuthValues.Token = null;       // invalidate any custom auth secrets
                     }
 
-                    this.State = ClientState.PeerCreated; // if we set another state here, we could keep clients from connecting in OnDisconnectedFromPhoton right here.
+                    this.IsInitialConnect = false;          // not "connecting" anymore
+                    this.State = ClientState.PeerCreated;   // if we set another state here, we could keep clients from connecting in OnDisconnectedFromPhoton right here.
                     SendMonoMessage(PhotonNetworkingMessage.OnDisconnectedFromPhoton);
                 }
                 break;
 
             case StatusCode.ExceptionOnConnect:
             case StatusCode.SecurityExceptionOnConnect:
+
+				this.IsInitialConnect = false;
+
                 this.State = ClientState.PeerCreated;
                 if (this.AuthValues != null)
                 {
@@ -2136,6 +2140,7 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
 
                     this.State = ClientState.PeerCreated;
                     cause = (DisconnectCause)statusCode;
+					this.IsInitialConnect = false;
                     SendMonoMessage(PhotonNetworkingMessage.OnFailedToConnectToPhoton, cause);
                 }
                 else
@@ -2154,6 +2159,7 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
                 {
                     Debug.LogWarning(statusCode + " while connecting to: " + this.ServerAddress + ". Check if the server is available.");
 
+					this.IsInitialConnect = false;
                     cause = (DisconnectCause)statusCode;
                     SendMonoMessage(PhotonNetworkingMessage.OnFailedToConnectToPhoton, cause);
                 }
@@ -2189,6 +2195,7 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
                 {
                     Debug.LogWarning(statusCode + " while connecting to: " + this.ServerAddress + ". Check if the server is available.");
 
+					this.IsInitialConnect = false;
                     cause = (DisconnectCause)statusCode;
                     SendMonoMessage(PhotonNetworkingMessage.OnFailedToConnectToPhoton, cause);
                 }
@@ -2989,7 +2996,7 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
         return true;
     }
 
-    internal Hashtable SendInstantiate(string prefabName, Vector3 position, Quaternion rotation, int group, int[] viewIDs, object[] data, bool isGlobalObject)
+    internal Hashtable SendInstantiate(string prefabName, Vector3 position, Quaternion rotation, byte group, int[] viewIDs, object[] data, bool isGlobalObject)
     {
         // first viewID is now also the gameobject's instantiateId
         int instantiateId = viewIDs[0];   // LIMITS PHOTONVIEWS&PLAYERS

@@ -40,18 +40,32 @@
             </remarks>
             <returns>Fraction of the current time in Milliseconds (this is not a proper datetime timestamp).</returns>
         </member>
-        <member name="M:ExitGames.Client.Photon.SupportClass.CallInBackground(System.Func{System.Boolean})">
+        <member name="M:ExitGames.Client.Photon.SupportClass.CallInBackground(System.Func{System.Boolean},System.Int32,System.String)">
             <summary>
             Creates a background thread that calls the passed function in 100ms intervals, as long as that returns true.
             </summary>
-            <param name="myThread"></param>
         </member>
-        <member name="M:ExitGames.Client.Photon.SupportClass.CallInBackground(System.Func{System.Boolean},System.Int32)">
+        <member name="M:ExitGames.Client.Photon.SupportClass.StartBackgroundCalls(System.Func{System.Boolean},System.Int32,System.String)">
             <summary>
-            Creates a background thread that calls the passed function in 100ms intervals, as long as that returns true.
+            Creates a background thread that calls the passed function in intervals, as long as that returns true.
             </summary>
-            <param name="myThread"></param>
-            <param name="millisecondsInterval">Milliseconds to sleep between calls of myThread.</param>
+            <param name="myThread">The function to call. Must return true, if it should be called again.</param>
+            <param name="millisecondsInterval">Milliseconds to sleep between calls of myThread. Default: 100ms.</param>
+            <param name="taskName">An optional name for the task for eased debugging.</param>
+        </member>
+        <member name="M:ExitGames.Client.Photon.SupportClass.StopBackgroundCalls(System.Byte)">
+            <summary>
+            Ends the thread with the given id (= index of the thread list).
+            </summary>
+            <param name="id">The unique ID of the thread.</param>
+            <returns>True if the thread is canceled and false otherwise, e.g. if the thread with the given ID does not exist.</returns>
+        </member>
+        <member name="M:ExitGames.Client.Photon.SupportClass.StopAllBackgroundCalls">
+            <summary>
+            Ends the thread with the given id (= index of the thread list).
+            </summary>
+            <param name="id">The unique ID of the thread.</param>
+            <returns>True if the thread is canceled and false otherwise, e.g. if the thread with the given ID does not exist.</returns>
         </member>
         <member name="M:ExitGames.Client.Photon.SupportClass.WriteStackTrace(System.Exception,System.IO.TextWriter)">
             <summary>
