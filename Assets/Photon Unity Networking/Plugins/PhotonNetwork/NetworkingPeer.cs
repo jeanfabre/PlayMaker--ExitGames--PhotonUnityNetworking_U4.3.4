@@ -161,7 +161,7 @@ public enum DisconnectCause
     /// If that file is unavailable or not configured to let the client connect, this exception is thrown.
     /// Photon usually provides this crossdomain file for Unity.
     /// If it fails, read:
-    /// http://doc.exitgames.com/photon-server/PolicyApp
+    /// https://doc.photonengine.com/en-us/onpremise/current/operations/policy-files
     /// </remarks>
     SecurityExceptionOnConnect = StatusCode.SecurityExceptionOnConnect,
 
@@ -1840,7 +1840,21 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
                 // PUN assumes you fetch the name-server's list of regions to ping them
                 if (PhotonNetwork.PhotonServerSettings.HostType == ServerSettings.HostingOption.BestRegion)
                 {
-                    PhotonHandler.PingAvailableRegionsAndConnectToBest();
+					
+			        CloudRegionCode bestFromPrefs = PhotonHandler.BestRegionCodeInPreferences;
+					if (bestFromPrefs != CloudRegionCode.none && 
+				    this.AvailableRegions.Exists(x => x.Code == bestFromPrefs) 
+				    )
+			        {
+						Debug.Log("Best region found in PlayerPrefs. Connecting to: " + bestFromPrefs);
+						if (!this.ConnectToRegionMaster(bestFromPrefs))
+						{
+							PhotonHandler.PingAvailableRegionsAndConnectToBest();
+						}
+			        }else{
+
+	                    PhotonHandler.PingAvailableRegionsAndConnectToBest();
+					}
                 }
                 break;
 
@@ -2611,7 +2625,7 @@ internal class NetworkingPeer : LoadBalancingPeer, IPhotonPeerListener
                 }
                 else
                 {
-                    PhotonNetwork.LeaveRoom();
+                    PhotonNetwork.LeaveRoom(false);
                 }
 
                 break;
