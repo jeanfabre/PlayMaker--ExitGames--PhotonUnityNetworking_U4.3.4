@@ -31,6 +31,9 @@ public class PhotonChatUserProxy : MonoBehaviour, IPunChatUser {
 	[EventTargetVariable("eventTarget")]
 	public PlayMakerEvent OnStatusUpdateEvent= new PlayMakerEvent("PHOTON / CHAT / USER / ON STATUS UPDATE");
 
+	[EventTargetVariable("eventTarget")]
+	public PlayMakerEvent OnSentMessageEvent= new PlayMakerEvent("PHOTON / CHAT / USER / ON SENT MESSAGE");
+
 	public bool debug = false;
 
 
@@ -65,9 +68,20 @@ public class PhotonChatUserProxy : MonoBehaviour, IPunChatUser {
 		OnStatusUpdateEvent.SendEvent(null,eventTarget);
 	}
 
-	void IPunChatUser.OnGetMessages (string channel, string[] senders, object[] messages)
+	void IPunChatUser.OnSentMessages (string channel, string[] senders, object[] messages)
 	{
-		//throw new System.NotImplementedException ();
+		if (debug)
+		{
+			UnityEngine.Debug.Log("PhotonChatUserProxy.OnGetMessages channel <"+channel+"> Senders:<"+senders.ToStringFull()+"> objects<"+messages.ToStringFull()+">",this);
+		}
+
+		PhotonChatUserGetOnSentMessageEventData.LastUser = UserId;
+		PhotonChatUserGetOnSentMessageEventData.LastSenders = senders;
+		PhotonChatUserGetOnSentMessageEventData.LastChannel = channel;
+		PhotonChatUserGetOnSentMessageEventData.LastMessages = messages;
+
+		OnSentMessageEvent.SendEvent (null, eventTarget);
+
 	}
 
 	void IPunChatUser.OnPrivateMessage (string sender, object message, string channelName)

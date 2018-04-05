@@ -49,7 +49,7 @@ namespace ExiGames.Client.Photon.Chat.Utils
 		/// <param name="channel">Channel.</param>
 		/// <param name="senders">Senders.</param>
 		/// <param name="messages">Messages.</param>
-		void OnGetMessages (string channel,string[] senders, object[] messages);
+		void OnSentMessages (string channel,string[] senders, object[] messages);
 
 		/// <summary>
 		/// Private Messages for this User
@@ -230,11 +230,17 @@ namespace ExiGames.Client.Photon.Chat.Utils
 				PunChatChannelList[channelName].ForEach(p => p.OnGetMessages(senders,messages));
 			}
 
+
 			foreach(var _ui in PunChatUserList)
 			{
-				_ui.Value.ForEach(p => p.OnGetMessages(channelName,senders,messages));
+				foreach(var _Listener in _ui.Value)
+				{
+					if (senders.Contains(_Listener.User))
+					{
+						_Listener.OnSentMessages(channelName,senders,messages);
+					}
+				}
 			}
-
 		}
 		
 		public void OnPrivateMessage (string sender, object message, string channelName)
